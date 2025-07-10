@@ -2,6 +2,7 @@ import Homepage from "./pages/Home/Homepage";
 import DefaultLogin from "./pages/Authentication/defaultLogin";
 import DoctorLogin from "./pages/Authentication/Doctor/Login";
 import UserLogin from "./pages/Authentication/User/Login";
+import HealthcareBookingSystem from "./pages/Schedule/SchedulePage";
 // import VerifyEmail from "./pages/Authentication/verifyEmailPage";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
@@ -18,6 +19,7 @@ const App = () => {
         <Route path="/register/user" element={<UserRegister />} />
         {/* <Route path="/verify-email" element={<VerifyEmail />} /> */}
         <Route path="/register/doctor" element={<DoctorRegister />} />
+        <Route path="/booking" element={<HealthcareBookingSystem />} />
       </Routes>
     </BrowserRouter>
   );
