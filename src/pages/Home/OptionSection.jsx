@@ -2,10 +2,10 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
+import { motion } from "framer-motion";
 import "swiper/css";
 import optionData from "../../components/data/OptionData";
 
-// Helper để chuyển bgColor -> textColor đậm hơn
 const getTextColor = (bgColor) => {
   const map = {
     "bg-yellow-200": "text-yellow-700",
@@ -52,7 +52,7 @@ const OptionSection = () => {
           <SwiperSlide key={option.id}>
             <div
               onClick={() => navigate(option.navigation)}
-              className={`relative rounded-xl p-6 h-60 shadow-md transition-transform duration-300 transform hover:scale-105 cursor-pointer overflow-hidden group ${option.bgColor}`}
+              className={`relative group rounded-xl p-6 h-60 shadow-md transition-transform duration-300 hover:scale-105 cursor-pointer overflow-hidden ${option.bgColor}`}
             >
               <h3
                 className={`text-xl font-semibold mb-2 ${getTextColor(
@@ -63,10 +63,9 @@ const OptionSection = () => {
               </h3>
               <p className="text-gray-700">{option.description}</p>
 
-              {/* Icon animation */}
-              <div className="absolute bottom-4 right-4 transition-transform duration-300 origin-bottom-right group-hover:rotate-[8deg]">
+              <motion.div className="absolute bottom-4 right-4 transition-transform duration-300 group-hover:rotate-[8deg]">
                 {option.icon}
-              </div>
+              </motion.div>
             </div>
           </SwiperSlide>
         ))}

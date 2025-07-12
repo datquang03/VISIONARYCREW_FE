@@ -5,12 +5,9 @@ import { motion } from 'framer-motion';
 const Navbar = () => {
   return (
     <motion.nav
-      initial={{ y: -50, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8 }}
-      className="flex justify-between items-center px-6 py-4 bg-slate-900 bg-opacity-80 backdrop-blur-md shadow-lg"
+      className="fixed top-0 left-0 w-full z-[1000] bg-slate-900 bg-opacity-90 backdrop-blur-md shadow-md px-6 py-4 flex justify-between items-center"
     >
-      {/* Logo bên trái */}
+      {/* Logo */}
       <Link to="/" className="text-2xl font-bold text-white tracking-wider">
         <motion.span
           whileHover={{ scale: 1.1, color: '#38bdf8' }}
@@ -20,7 +17,7 @@ const Navbar = () => {
         </motion.span>
       </Link>
 
-      {/* Nút đăng nhập bên phải */}
+      {/* Nút đăng nhập */}
       <Link to="/login">
         <motion.button
           whileHover={{
@@ -30,7 +27,7 @@ const Navbar = () => {
             boxShadow: '0px 0px 15px rgba(56,189,248,0.6)',
           }}
           whileTap={{ scale: 0.95 }}
-          className="px-4 py-2 rounded-xl bg-slate-700 text-white font-semibold transition-all duration-300 cursor-pointer shadow-lg hover:bg-slate-600 hover:text-white"
+          className="px-4 py-2 rounded-xl bg-slate-700 text-white font-semibold shadow-md transition-all duration-300"
         >
           Đăng nhập
         </motion.button>
