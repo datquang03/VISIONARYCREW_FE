@@ -9,6 +9,7 @@ import UserRegister from "./pages/Authentication/User/Register";
 import DoctorRegister from "./pages/Authentication/Doctor/Register";
 import UserBookingPage from "./pages/Booking/UserBookingPage";
 import DoctorSchedule from "./pages/Booking/DoctorBookingPage";
+import DoctorPackages from "./pages/Package/DoctorPackage";
 const App = () => {
   return (
     <BrowserRouter>
@@ -22,6 +23,8 @@ const App = () => {
         <Route path="/register/doctor" element={<DoctorRegister />} />
         <Route path="/booking" element={<UserBookingPage />} />
         <Route path="/booking/doctor" element={<DoctorSchedule />} />
+        <Route path="/doctor/packages" element={<DoctorPackages />} />
+        {/* Add more routes as needed */}
       </Routes>
     </BrowserRouter>
   );

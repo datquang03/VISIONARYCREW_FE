@@ -11,4 +11,14 @@
   box-shadow: 0 0 10px 2px rgba(0, 255, 128, 0.5);
   transition: all 0.3s ease-in-out;
 }
-
+@keyframes shine {
+  0% {
+    transform: rotate(45deg) translate(-100%, -100%);
+  }
+  100% {
+    transform: rotate(45deg) translate(100%, 100%);
+  }
+}
+.group-hover\:animate-shine:hover {
+  animation: shine 1s ease-in-out forwards;
+}
