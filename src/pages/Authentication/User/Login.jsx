@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import CustomButton from '../../../components/buttons/CustomButton';
+import { useDispatch } from 'react-redux';
+import { login } from '../../../redux/APIs/slices/authSlice';
 
 const UserLogin = () => {
+  const dispatch = useDispatch()
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ username: '', password: '' });
 
@@ -15,6 +18,7 @@ const UserLogin = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(formData);
+    dispatch(login(formData))
   };
 
   return (
