@@ -8,17 +8,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 const DoctorLogin = () => {
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ username: '', password: '' });
   const { isLoading, isError, isSuccess, message } = useSelector((state) => state.authSlice);
+
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const togglePassword = () => setShowPassword((prev) => !prev);
 
-const handleSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!isLoading) {
       dispatch(login(formData));
@@ -43,12 +44,16 @@ const handleSubmit = (e) => {
     }
   }, [isSuccess, isError, dispatch, navigate]);
 
+  useEffect(() => {
+    return () => {
+      dispatch(setNull());
+    };
+  }, [dispatch]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-200 to-cyan-300 px-4 relative">
-      {/* ✅ Button nằm ngoài phần chính, nên fixed sẽ hoạt động đúng */}
       <CustomButton text="Trở về" to="/login" position="top-left" />
 
-      {/* ✅ Wrapper để căn giữa form */}
       <div className="flex items-center justify-center min-h-screen">
         <motion.div
           className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row"
@@ -76,7 +81,10 @@ const handleSubmit = (e) => {
                   value={formData.username}
                   onChange={handleChange}
                   placeholder="Tên đăng nhập"
-                  className="w-full pl-10 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400"
+                  disabled={isLoading}
+                  className={`w-full pl-10 py-3 rounded-xl border border-gray-300 focus:outline-none ${
+                    isLoading ? "bg-gray-100 cursor-not-allowed" : "focus:ring-2 focus:ring-green-400"
+                  }`}
                 />
               </div>
 
@@ -89,7 +97,10 @@ const handleSubmit = (e) => {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Mật khẩu"
-                  className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400"
+                  disabled={isLoading}
+                  className={`w-full pl-10 pr-10 py-3 rounded-xl border border-gray-300 focus:outline-none ${
+                    isLoading ? "bg-gray-100 cursor-not-allowed" : "focus:ring-2 focus:ring-green-400"
+                  }`}
                 />
                 <div
                   onClick={togglePassword}
@@ -102,16 +113,47 @@ const handleSubmit = (e) => {
               {/* Submit button */}
               <motion.button
                 type="submit"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full bg-green-500 text-white py-3 rounded-xl font-semibold shadow-md hover:bg-green-600 transition cursor-pointer flex items-center justify-center"
+                whileHover={{ scale: isLoading ? 1 : 1.05 }}
+                whileTap={{ scale: isLoading ? 1 : 0.95 }}
+                disabled={isLoading}
+                className={`w-full py-3 rounded-xl font-semibold shadow-md transition flex items-center justify-center ${
+                  isLoading
+                    ? "bg-green-300 text-gray-100 cursor-not-allowed"
+                    : "bg-green-500 text-white hover:bg-green-600 cursor-pointer"
+                }`}
               >
-                Đăng nhập
+                {isLoading ? (
+                  <>
+                    <svg
+                      className="animate-spin h-5 w-5 mr-2 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Đang xử lý...
+                  </>
+                ) : (
+                  "Đăng nhập"
+                )}
               </motion.button>
             </form>
           </div>
 
-          {/* Right: Illustration / animation */}
+          {/* Right: Illustration */}
           <motion.div
             className="md:w-1/2 p-6 bg-gradient-to-br from-green-100 to-white flex flex-col justify-center items-center"
             initial={{ x: 100, opacity: 0 }}
