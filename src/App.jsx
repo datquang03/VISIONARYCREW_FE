@@ -17,7 +17,7 @@ import DoctorRegisterForm from "./pages/Dashboard/Doctor/DoctorRegisterForm";
 import UsersManagement from "./pages/Dashboard/Admin/UsersManagement";
 
 import VerifyEmail from "./pages/Authentication/verifyEmailPage";
-import 'react-toastify/dist/ReactToastify.css'; // Keep this for styles
+import 'react-toastify/dist/ReactToastify.css'; 
 import { ToastContainer } from "./components/Toast/CustomToast";
 
 const App = () => {
@@ -34,6 +34,7 @@ const App = () => {
         <Route path="/register/doctor" element={<DoctorRegister />} />
         <Route path="/booking" element={<UserBookingPage />} />
         <Route path="/booking/doctor" element={<DoctorSchedule />} />
+
       </Routes>
     </BrowserRouter>
   );
