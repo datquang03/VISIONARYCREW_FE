@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
 import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import CustomButton from '../../../components/buttons/CustomButton';
-import { useDispatch } from 'react-redux';
-import { login } from '../../../redux/APIs/slices/authSlice';
-
+import { useDispatch, useSelector } from 'react-redux';
+import { login, setNull } from '../../../redux/APIs/slices/authSlice';
+import { useNavigate } from 'react-router-dom';
+import { CustomToast } from '../../../components/Toast/CustomToast';
+import { motion } from "framer-motion";
 const UserLogin = () => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ username: '', password: '' });
+  const { isLoading, isError, isSuccess, message } = useSelector((state) => state.authSlice);
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -17,13 +20,37 @@ const UserLogin = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
-    dispatch(login(formData))
+    if (!isLoading) {
+      dispatch(login(formData));
+    }
   };
+
+  useEffect(() => {
+    if (isError) {
+      CustomToast({ message, type: "error" });
+      setTimeout(() => dispatch(setNull()), 3000);
+    }
+    if (isSuccess) {
+      CustomToast({ message, type: "success" });
+      setFormData({
+        username: "",
+        password: "",
+      });
+      setTimeout(() => {
+        dispatch(setNull());
+        navigate("/");
+      }, 1000);
+    }
+  }, [isSuccess, isError, dispatch, navigate]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(setNull());
+    };
+  }, [dispatch]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-200 to-cyan-300 px-4 relative">
-      {/* ✅ Button được đặt đúng chỗ để fixed hoạt động */}
       <CustomButton text="Trở về" to="/login" position="top-left" />
 
       <div className="flex items-center justify-center min-h-screen">
@@ -53,7 +80,10 @@ const UserLogin = () => {
                   value={formData.username}
                   onChange={handleChange}
                   placeholder="Tên đăng nhập"
-                  className="w-full pl-10 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  disabled={isLoading}
+                  className={`w-full pl-10 py-3 rounded-xl border border-gray-300 focus:outline-none ${
+                    isLoading ? "bg-gray-100 cursor-not-allowed" : "focus:ring-2 focus:ring-blue-400"
+                  }`}
                 />
               </div>
 
@@ -66,7 +96,10 @@ const UserLogin = () => {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Mật khẩu"
-                  className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  disabled={isLoading}
+                  className={`w-full pl-10 pr-10 py-3 rounded-xl border border-gray-300 focus:outline-none ${
+                    isLoading ? "bg-gray-100 cursor-not-allowed" : "focus:ring-2 focus:ring-blue-400"
+                  }`}
                 />
                 <div
                   onClick={togglePassword}
@@ -79,11 +112,42 @@ const UserLogin = () => {
               {/* Submit button */}
               <motion.button
                 type="submit"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full bg-blue-500 text-white py-3 rounded-xl font-semibold shadow-md hover:bg-blue-600 transition cursor-pointer flex items-center justify-center"
+                whileHover={{ scale: isLoading ? 1 : 1.05 }}
+                whileTap={{ scale: isLoading ? 1 : 0.95 }}
+                disabled={isLoading}
+                className={`w-full py-3 rounded-xl font-semibold shadow-md transition flex items-center justify-center ${
+                  isLoading
+                    ? "bg-blue-300 text-gray-100 cursor-not-allowed"
+                    : "bg-blue-500 text-white hover:bg-blue-600 cursor-pointer"
+                }`}
               >
-                Đăng nhập
+                {isLoading ? (
+                  <>
+                    <svg
+                      className="animate-spin h-5 w-5 mr-2 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Đang xử lý...
+                  </>
+                ) : (
+                  "Đăng nhập"
+                )}
               </motion.button>
             </form>
           </div>

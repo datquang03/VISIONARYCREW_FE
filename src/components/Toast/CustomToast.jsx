@@ -1,4 +1,4 @@
-import { toast } from 'react-toastify';
+import { toast, ToastContainer as ReactToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 // Configure toast with Tailwind-like styling
@@ -40,5 +40,5 @@ export const CustomToast = ({ message, type = 'info' }) => {
 
 // Initialize toast container (call this once in your app, e.g., in App.js)
 export const ToastContainer = () => {
-  return <toast.ToastContainer />;
+  return <ReactToastContainer />;
 };

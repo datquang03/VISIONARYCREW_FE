@@ -1,21 +1,47 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaUserMd, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import CustomButton from '../../../components/buttons/CustomButton';
+import { CustomToast } from '../../../components/Toast/CustomToast';
+import { login, setNull } from '../../../redux/APIs/slices/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 const DoctorLogin = () => {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ username: '', password: '' });
-
+  const { isLoading, isError, isSuccess, message } = useSelector((state) => state.authSlice);
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const togglePassword = () => setShowPassword((prev) => !prev);
 
-  const handleSubmit = (e) => {
+const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
+    if (!isLoading) {
+      dispatch(login(formData));
+    }
   };
+
+  useEffect(() => {
+    if (isError) {
+      CustomToast({ message, type: "error" });
+      setTimeout(() => dispatch(setNull()), 3000);
+    }
+    if (isSuccess) {
+      CustomToast({ message, type: "success" });
+      setFormData({
+        username: "",
+        password: "",
+      });
+      setTimeout(() => {
+        dispatch(setNull());
+        navigate("/");
+      }, 1000);
+    }
+  }, [isSuccess, isError, dispatch, navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-200 to-cyan-300 px-4 relative">

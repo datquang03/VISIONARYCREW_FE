@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   FaUserMd,
@@ -16,6 +16,9 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import CustomButton from "../../../components/buttons/CustomButton"; // ✅ IMPORT CustomButton
+import { useDispatch, useSelector } from "react-redux";
+import { doctorRegisterAcc, setNull } from "../../../redux/APIs/slices/authSlice";
+import { CustomToast } from "../../../components/Toast/CustomToast";
 
 const doctorTypeOptions = [
   { label: "Bác sĩ đa khoa", value: "general" },
@@ -26,6 +29,7 @@ const doctorTypeOptions = [
 ];
 
 const DoctorRegister = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -40,6 +44,10 @@ const DoctorRegister = () => {
     avatar: null,
     certificationImages: [],
   });
+
+    const { isLoading, isError, isSuccessReg, message } = useSelector(
+    (state) => state.authSlice
+  );
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -79,7 +87,6 @@ const DoctorRegister = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const data = new FormData();
-
     Object.entries(formData).forEach(([key, value]) => {
       if (key === "certificationImages") {
         const certDescriptions = value.map(({ description }) => ({ description }));
@@ -91,10 +98,34 @@ const DoctorRegister = () => {
         data.append(key, value);
       }
     });
-
-    console.log("FormData đã sẵn sàng gửi lên server!");
+    dispatch(doctorRegisterAcc(data));
   };
+  useEffect(() => {
+    if (isError) {
+      CustomToast({ message, type: "error" });
+      setTimeout(() => dispatch(setNull()), 3000);
+    }
+    if (isSuccessReg) {
+      CustomToast({ message, type: "success" });
+      setFormData({
+        username: "",
+        email: "",
+        phone: "",
+        dateOfBirth: "",
+        password: "",
+      });
+      setTimeout(() => {
+        dispatch(setNull());
+        navigate("/verify-email");
+      }, 1000);
+    }
+  }, [isSuccessReg, isError, dispatch, navigate]);
 
+  useEffect(() => {
+    return () => {
+      dispatch(setNull());
+    };
+  }, [dispatch]);
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-blue-100 to-blue-300 p-4 space-y-4">
       {/* ✅ Nút trở về top-left */}

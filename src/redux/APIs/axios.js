@@ -3,7 +3,7 @@ import axios from "axios";
 let userInfo = localStorage.getItem("userInfo");
 let accessToken = userInfo ? JSON.parse(userInfo).token : null;
 const axiosClient = axios.create({
-  baseURL: "https://visionarycrew-be.vercel.app/api",
+  baseURL: "http://localhost:8080/api",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
