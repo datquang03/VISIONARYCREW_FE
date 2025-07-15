@@ -1,9 +1,9 @@
 
 import { motion } from 'framer-motion';
 
-const ShortLoading = (text) => {
+const ShortLoading = ({ text }) => {
   return (
-    <div className="flex items-center justify-center space-x-1 text-white font-medium text-sm">
+    <div className="flex items-center justify-center space-x-1 text-gray-600 font-medium text-sm">
       <span>{text}</span>
       <motion.span
         className="inline-block"

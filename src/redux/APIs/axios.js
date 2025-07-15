@@ -3,7 +3,7 @@ import axios from "axios";
 let userInfo = localStorage.getItem("userInfo");
 let accessToken = userInfo ? JSON.parse(userInfo).token : null;
 const axiosClient = axios.create({
-  baseURL: "https://visionarycrew-be.vercel.app/api",
+  baseURL: "http://localhost:8080/api",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -20,7 +20,16 @@ axiosClient.interceptors.request.use(
     }
     return config;
   },
+  (error) => Promise.reject(error)
+);
+
+axiosClient.interceptors.response.use(
+  (response) => response, // Trả về response nguyên bản
   (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("userInfo");
+      window.location.href = "/login";
+    }
     return Promise.reject(error);
   }
 );
