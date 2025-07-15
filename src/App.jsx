@@ -16,34 +16,26 @@ import DoctorDashboard from "./pages/Dashboard/Doctor/DoctorDashboard";
 import DoctorRegisterForm from "./pages/Dashboard/Doctor/DoctorRegisterForm";
 import UsersManagement from "./pages/Dashboard/Admin/UsersManagement";
 
+import VerifyEmail from "./pages/Authentication/verifyEmailPage";
+import 'react-toastify/dist/ReactToastify.css'; // Keep this for styles
+import { ToastContainer } from "./components/Toast/CustomToast";
+
 const App = () => {
   return (
-    <SidebarProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Homepage />} />
-          <Route path="/login" element={<DefaultLogin />} />
-          <Route path="/login/doctor" element={<DoctorLogin />} />
-          <Route path="/login/user" element={<UserLogin />} />
-          <Route path="/register/user" element={<UserRegister />} />
-          <Route path="/register/doctor" element={<DoctorRegister />} />
-          <Route path="/booking" element={<UserBookingPage />} />
-          <Route path="/booking/doctor" element={<DoctorSchedule />} />
-          <Route path="/doctor/packages" element={<DoctorPackages />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="doctors" element={<DoctorsPage />} />
-            <Route path="doctors/pending" element={<DoctorRegisterTab />} />
-            <Route path="users" element={<UsersManagement />} />
-          </Route>
-          <Route path="/doctor/dashboard" element={<DoctorDashboard />}>
-            <Route index element={<DoctorRegisterForm />} />
-            <Route path="register/form" element={<DoctorRegisterForm />} />
-          </Route>
-          {/* Add more routes as needed */}
-        </Routes>
-      </BrowserRouter>
-    </SidebarProvider>
+    <BrowserRouter>
+      <ToastContainer /> {/* Using the exported ToastContainer from CustomToast.js */}
+      <Routes>
+        <Route path="/" element={<Homepage />} />
+        <Route path="/login" element={<DefaultLogin />} />
+        <Route path="/login/doctor" element={<DoctorLogin />} />
+        <Route path="/login/user" element={<UserLogin />} />
+        <Route path="/register/user" element={<UserRegister />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/register/doctor" element={<DoctorRegister />} />
+        <Route path="/booking" element={<UserBookingPage />} />
+        <Route path="/booking/doctor" element={<DoctorSchedule />} />
+      </Routes>
+    </BrowserRouter>
   );
 };
 
