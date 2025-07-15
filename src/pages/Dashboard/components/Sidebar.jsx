@@ -28,9 +28,9 @@ const Sidebar = ({ role }) => {
 
   const adminNavItems = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: <FaHome /> },
-    { name: 'Tài khoản', path: '/admin/dashboard/users', icon: <FaUsers /> },
-    { name: 'Bác sĩ', path: '/admin/dashboard/doctors', icon: <FaUserMd /> },
-    { name: 'Đơn đăng kí bác sĩ', path: '/admin/dashboard/doctors/pending', icon: <FaTable /> },
+    { name: 'Tài khoản', path: '/admin/users', icon: <FaUsers /> },
+    { name: 'Bác sĩ', path: '/admin/doctors', icon: <FaUserMd /> },
+    { name: 'Đơn đăng kí bác sĩ', path: '/admin/doctors/pending', icon: <FaTable /> },
     { name: 'Settings', path: '/settings', icon: <FaCog /> }
   ];
 
