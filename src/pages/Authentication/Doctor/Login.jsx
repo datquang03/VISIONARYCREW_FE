@@ -29,7 +29,7 @@ const DoctorLogin = () => {
   useEffect(() => {
     if (isError) {
       CustomToast({ message, type: "error" });
-      setTimeout(() => dispatch(setNull()), 3000);
+      setTimeout(() => dispatch(setNull()), 200);
     }
     if (isSuccess) {
       CustomToast({ message, type: "success" });

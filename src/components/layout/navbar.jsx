@@ -2,7 +2,11 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-import { getUserProfile, logout } from "../../redux/APIs/slices/authSlice";
+import {
+  getUserProfile,
+  logout,
+  setNull,
+} from "../../redux/APIs/slices/authSlice";
 
 const Navbar = () => {
   const dispatch = useDispatch();
@@ -14,8 +18,16 @@ const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
-    const userId = userInfo ? userInfo.id : null;
-    dispatch(getUserProfile(userId));
+    if (userInfo && userInfo.role) {
+      const userId = userInfo ? userInfo.id : null;
+      dispatch(getUserProfile(userId));
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(setNull());
+    };
   }, [dispatch]);
 
   const toggleDropdown = () => {

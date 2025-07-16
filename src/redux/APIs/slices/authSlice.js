@@ -126,6 +126,7 @@ const authSlice = createSlice({
       state.isSuccessReg = false;
       state.message = null;
       state.isError = null
+      state.isLoading = false
     },
   },
   extraReducers: (builder) => {
@@ -144,7 +145,8 @@ const authSlice = createSlice({
           state.isError = false;
           state.message = action.payload.data.message;
         } else {
-          state.message = action.payload.response.data.message;
+        console.log(action.payload.status)
+          state.message = action.payload.data.message;
           state.isSuccess = false;
           state.isLoading = false;
           state.isError = true;
@@ -169,7 +171,7 @@ const authSlice = createSlice({
           state.isError = false;
           state.message = action.payload.data.message;
         } else {
-          state.message = action.payload.response.data.message;
+          state.message = action.payload.data.message;
           state.isSuccess = false;
           state.isLoading = false;
           state.isError = true;
@@ -281,7 +283,7 @@ const authSlice = createSlice({
           state.isError = false;
           state.message = action.payload.data.message;
         } else {
-          state.message = action.payload.response.data.message;
+          state.message = action.payload.data.message;
           state.isSuccessReg = false;
           state.isLoading = false;
           state.isError = true;

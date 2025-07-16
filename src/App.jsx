@@ -17,13 +17,18 @@ import DoctorRegisterForm from "./pages/Dashboard/Doctor/DoctorRegisterForm";
 import UsersManagement from "./pages/Dashboard/Admin/UsersManagement";
 
 import VerifyEmail from "./pages/Authentication/verifyEmailPage";
-import 'react-toastify/dist/ReactToastify.css'; 
+import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "./components/Toast/CustomToast";
+import {
+  AdminProtectedRouter,
+  DoctorProtectedRouter,
+  ProtectedRouter,
+} from "./middlewares/Auth";
 
 const App = () => {
   return (
     <BrowserRouter>
-      <ToastContainer /> {/* Using the exported ToastContainer from CustomToast.js */}
+      <ToastContainer />{" "}
       <Routes>
         <Route path="/" element={<Homepage />} />
         <Route path="/login" element={<DefaultLogin />} />
@@ -34,7 +39,28 @@ const App = () => {
         <Route path="/register/doctor" element={<DoctorRegister />} />
         <Route path="/booking" element={<UserBookingPage />} />
         <Route path="/booking/doctor" element={<DoctorSchedule />} />
-
+        <Route element={<ProtectedRouter />}>
+          <Route element={<AdminProtectedRouter />}>
+            <Route path="/dashboard" element={<AdminDashboard />} />
+            <Route path="/dashboard/doctors" element={<DoctorsPage />} />
+            <Route path="/dashboard/users" element={<UsersManagement />} />
+            <Route
+              path="/dashboard/doctor-register"
+              element={<DoctorRegisterTab />}
+            />
+          </Route>
+          <Route element={<DoctorProtectedRouter />}>
+            <Route path="/dashboard/doctor" element={<DoctorDashboard />} />
+            <Route
+              path="/dashboard/doctor/register"
+              element={<DoctorRegisterForm />}
+            />
+            <Route
+              path="/dashboard/doctor/packages"
+              element={<DoctorPackages />}
+            />
+          </Route>
+        </Route>
       </Routes>
     </BrowserRouter>
   );
