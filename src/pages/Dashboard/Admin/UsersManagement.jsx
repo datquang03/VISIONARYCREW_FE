@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllUsers } from "../../../redux/APIs/slices/adminSlice";
 import ShortLoading from "../../../components/Loading/ShortLoading";
-import { FaUsers, FaUserShield, FaUserGraduate, FaEye } from "react-icons/fa";
+import { FaUsers, FaUserShield, FaEye, FaUser } from "react-icons/fa";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
@@ -144,7 +144,7 @@ const UsersManagement = () => {
   const tabList = [
     { key: "all", label: "Tất cả", icon: <FaUsers /> },
     { key: "admin", label: "Admin", icon: <FaUserShield /> },
-    { key: "student", label: "Người dùng", icon: <FaUserGraduate /> },
+    { key: "user", label: "Người dùng", icon: <FaUser /> },
   ];
 
   useEffect(() => {
