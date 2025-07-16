@@ -57,7 +57,7 @@ const UserRegister = () => {
       });
       setTimeout(() => {
         dispatch(setNull());
-        navigate("/doctors/login");
+        navigate("/verify-email");
       }, 1000);
     }
   }, [isSuccessReg, isError, dispatch, navigate]);

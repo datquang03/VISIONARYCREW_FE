@@ -25,8 +25,14 @@ import DoctorRegisterForm from "./pages/Dashboard/Doctor/DoctorRegisterForm";
 
 import { SidebarProvider } from "./pages/Dashboard/components/SidebarContext";
 
+import VerifyEmail from "./pages/Authentication/verifyEmailPage";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "./components/Toast/CustomToast";
+import {
+  AdminProtectedRouter,
+  DoctorProtectedRouter,
+  ProtectedRouter,
+} from "./middlewares/Auth";
 import DashboardLayout from "./pages/Dashboard/components/DashboardLayout";
 import UserProfile from "./pages/Profile/User/UserProfile";
 
@@ -34,42 +40,40 @@ import UserProfile from "./pages/Profile/User/UserProfile";
 const App = () => {
   return (
     <BrowserRouter>
-      <ToastContainer />
-      <SidebarProvider>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Homepage />} />
-          <Route path="/login" element={<DefaultLogin />} />
-          <Route path="/login/doctor" element={<DoctorLogin />} />
-          <Route path="/login/user" element={<UserLogin />} />
-          <Route path="/register/user" element={<UserRegister />} />
-          <Route path="/register/doctor" element={<DoctorRegister />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
-
-          {/* Booking */}
-          <Route path="/booking" element={<UserBookingPage />} />
-          <Route path="/booking/doctor" element={<DoctorSchedule />} />
-
-          {/* Doctor packages */}
-          <Route path="/doctor/packages" element={<DoctorPackages />} />
-
-          {/* User profile */}
-          <Route path="/profile/user" element={<UserProfile />} />
-          {/* Admin layout with nested routes */}
-          <Route path="/admin" element={<DashboardLayout />}>
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="doctors" element={<DoctorsPage />} />
-            <Route path="doctors/pending" element={<DoctorRegisterTab />} />
-            <Route path="users" element={<UsersManagement />} />
+      <ToastContainer />{" "}
+      <Routes>
+        <Route path="/" element={<Homepage />} />
+        <Route path="/login" element={<DefaultLogin />} />
+        <Route path="/login/doctor" element={<DoctorLogin />} />
+        <Route path="/login/user" element={<UserLogin />} />
+        <Route path="/register/user" element={<UserRegister />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/register/doctor" element={<DoctorRegister />} />
+        <Route path="/booking" element={<UserBookingPage />} />
+        <Route path="/booking/doctor" element={<DoctorSchedule />} />
+        <Route element={<ProtectedRouter />}>
+          <Route element={<AdminProtectedRouter />}>
+            <Route path="/dashboard" element={<AdminDashboard />} />
+            <Route path="/dashboard/doctors" element={<DoctorsPage />} />
+            <Route path="/dashboard/users" element={<UsersManagement />} />
+            <Route
+              path="/dashboard/doctor-register"
+              element={<DoctorRegisterTab />}
+            />
           </Route>
-
-          {/* Doctor layout with nested routes */}
-          <Route path="/doctor" element={<DashboardLayout />}>
-            <Route path="dashboard" element={<DoctorDashboard />} />
-            <Route path="register/form" element={<DoctorRegisterForm />} />
+          <Route element={<DoctorProtectedRouter />}>
+            <Route path="/dashboard/doctor" element={<DoctorDashboard />} />
+            <Route
+              path="/dashboard/doctor/register"
+              element={<DoctorRegisterForm />}
+            />
+            <Route
+              path="/dashboard/doctor/packages"
+              element={<DoctorPackages />}
+            />
           </Route>
-        </Routes>
-      </SidebarProvider>
+        </Route>
+      </Routes>
     </BrowserRouter>
   );
 };

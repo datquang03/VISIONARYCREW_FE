@@ -126,6 +126,7 @@ const authSlice = createSlice({
       state.isSuccessReg = false;
       state.message = null;
       state.isError = null
+      state.isLoading = false
     },
   },
   extraReducers: (builder) => {
@@ -142,8 +143,10 @@ const authSlice = createSlice({
           state.isSuccess = true;
           state.isLoading = false;
           state.isError = false;
+          state.message = action.payload.data.message;
         } else {
-          state.message = action.payload.response.data.message;
+        console.log(action.payload.status)
+          state.message = action.payload.data.message;
           state.isSuccess = false;
           state.isLoading = false;
           state.isError = true;
@@ -166,8 +169,9 @@ const authSlice = createSlice({
           state.isSuccess = true;
           state.isLoading = false;
           state.isError = false;
+          state.message = action.payload.data.message;
         } else {
-          state.message = action.payload.response.data.message;
+          state.message = action.payload.data.message;
           state.isSuccess = false;
           state.isLoading = false;
           state.isError = true;
@@ -213,7 +217,7 @@ const authSlice = createSlice({
           state.isError = false;
           state.message = action.payload.data.message;
         } else {
-          state.message = action.payload.response.data.message;
+          state.message = action.payload.data.message;
           state.isSuccessReg = false;
           state.isLoading = false;
           state.isError = true;
@@ -238,7 +242,7 @@ const authSlice = createSlice({
           state.isLoading = false;
           state.isSuccess = false;
           state.isError = true;
-          state.message = action.payload.response.data.message;
+          state.message = action.payload.data.message;
         }
       })
       .addCase(updateProfile.rejected, (state) => {
@@ -259,7 +263,7 @@ const authSlice = createSlice({
           state.isLoading = false;
           state.isSuccess = false;
           state.isError = true;
-          state.message = action.payload.response.data.message;
+          state.message = action.payload.data.message;
         }
       })
       .addCase(resetPassword.rejected, (state) => {
@@ -279,7 +283,7 @@ const authSlice = createSlice({
           state.isError = false;
           state.message = action.payload.data.message;
         } else {
-          state.message = action.payload.response.data.message;
+          state.message = action.payload.data.message;
           state.isSuccessReg = false;
           state.isLoading = false;
           state.isError = true;
@@ -303,7 +307,7 @@ const authSlice = createSlice({
           state.isError = false;
           state.user = action.payload.data;
         } else {
-          state.message = action.payload.response.data.message;
+          state.message = action.payload.data.message;
           state.isSuccessReg = false;
           state.isLoading = false;
           state.isError = true;

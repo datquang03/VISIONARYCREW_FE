@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { FaUserMd, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import CustomButton from '../../../components/buttons/CustomButton';
 import { CustomToast } from '../../../components/Toast/CustomToast';
-import { login, setNull } from '../../../redux/APIs/slices/authSlice';
+import { doctorLogin, login, setNull } from '../../../redux/APIs/slices/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -22,14 +22,14 @@ const DoctorLogin = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!isLoading) {
-      dispatch(login(formData));
+      dispatch(doctorLogin(formData));
     }
   };
 
   useEffect(() => {
     if (isError) {
       CustomToast({ message, type: "error" });
-      setTimeout(() => dispatch(setNull()), 3000);
+      setTimeout(() => dispatch(setNull()), 200);
     }
     if (isSuccess) {
       CustomToast({ message, type: "success" });
@@ -40,7 +40,7 @@ const DoctorLogin = () => {
       setTimeout(() => {
         dispatch(setNull());
         navigate("/");
-      }, 1000);
+      }, 2000);
     }
   }, [isSuccess, isError, dispatch, navigate]);
 
