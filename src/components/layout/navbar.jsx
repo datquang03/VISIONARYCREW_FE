@@ -6,7 +6,7 @@ import { getUserProfile, logout } from "../../redux/APIs/slices/authSlice";
 
 const Navbar = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
   const { isLoading, isError, isSuccess, message, user } = useSelector(
     (state) => state.authSlice
@@ -62,6 +62,15 @@ const Navbar = () => {
               animate="visible"
               className="absolute right-0 mt-2 w-48 bg-slate-800 rounded-lg shadow-lg py-2"
             >
+              {userInfo.role === "admin" && (
+                <Link
+                  to="/dashboard"
+                  className="block px-4 py-2 text-white hover:bg-slate-700"
+                  onClick={() => setIsDropdownOpen(false)}
+                >
+                  Dashboard
+                </Link>
+              )}
               <Link
                 to="/profile"
                 className="block px-4 py-2 text-white hover:bg-slate-700"
@@ -80,7 +89,7 @@ const Navbar = () => {
                 className="block px-4 py-2 text-white hover:bg-slate-700"
                 onClick={() => {
                   setIsDropdownOpen(false);
-                  dispatch(logout())
+                  dispatch(logout());
                   navigate("/login");
                 }}
               >

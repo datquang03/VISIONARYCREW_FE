@@ -39,7 +39,7 @@ const UserLogin = () => {
       setTimeout(() => {
         dispatch(setNull());
         navigate("/");
-      }, 1000);
+      }, 2000);
     }
   }, [isSuccess, isError, dispatch, navigate]);
 

@@ -142,6 +142,7 @@ const authSlice = createSlice({
           state.isSuccess = true;
           state.isLoading = false;
           state.isError = false;
+          state.message = action.payload.data.message;
         } else {
           state.message = action.payload.response.data.message;
           state.isSuccess = false;
@@ -166,6 +167,7 @@ const authSlice = createSlice({
           state.isSuccess = true;
           state.isLoading = false;
           state.isError = false;
+          state.message = action.payload.data.message;
         } else {
           state.message = action.payload.response.data.message;
           state.isSuccess = false;
