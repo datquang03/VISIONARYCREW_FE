@@ -5,6 +5,7 @@ import doctorSlice from "./APIs/slices/doctorSlice";
 import messageSlice from "./APIs/slices/messageSlice";
 import doctorRegisterSlice from "./APIs/slices/doctorRegisterSlice";
 import adminSlice from "./APIs/slices/adminSlice";
+import userSlice from "./APIs/slices/userProfileSlice";
 const store = configureStore({
   reducer: {
     authSlice: authSlice.reducer,
@@ -13,7 +14,7 @@ const store = configureStore({
     messageSlice: messageSlice.reducer,
     doctorRegisterSlice: doctorRegisterSlice.reducer,
     adminSlice: adminSlice.reducer,
-
+    userProfileSlice: userSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

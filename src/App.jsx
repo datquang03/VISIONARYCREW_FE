@@ -1,3 +1,4 @@
+import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Homepage from "./pages/Home/Homepage";
 import DefaultLogin from "./pages/Authentication/defaultLogin";
@@ -24,9 +25,11 @@ import DoctorRegisterForm from "./pages/Dashboard/Doctor/DoctorRegisterForm";
 
 import { SidebarProvider } from "./pages/Dashboard/components/SidebarContext";
 
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "./components/Toast/CustomToast";
 import DashboardLayout from "./pages/Dashboard/components/DashboardLayout";
+import UserProfile from "./pages/Profile/User/UserProfile";
+
 
 const App = () => {
   return (
@@ -50,6 +53,8 @@ const App = () => {
           {/* Doctor packages */}
           <Route path="/doctor/packages" element={<DoctorPackages />} />
 
+          {/* User profile */}
+          <Route path="/profile/user" element={<UserProfile />} />
           {/* Admin layout with nested routes */}
           <Route path="/admin" element={<DashboardLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
