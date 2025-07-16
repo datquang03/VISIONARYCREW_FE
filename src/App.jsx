@@ -7,8 +7,17 @@ import UserRegister from "./pages/Authentication/User/Register";
 import DoctorRegister from "./pages/Authentication/Doctor/Register";
 import UserBookingPage from "./pages/Booking/UserBookingPage";
 import DoctorSchedule from "./pages/Booking/DoctorBookingPage";
+import DoctorPackages from "./pages/Package/DoctorPackage";
+import AdminDashboard from "./pages/Dashboard/Admin/AdminDashboard";
+import DoctorRegisterTab from "./pages/Dashboard/Admin/DoctorRegisterTab";
+import DoctorsPage from "./pages/Dashboard/Admin/DoctorTab";
+import { SidebarProvider } from "./pages/Dashboard/components/SidebarContext";
+import DoctorDashboard from "./pages/Dashboard/Doctor/DoctorDashboard";
+import DoctorRegisterForm from "./pages/Dashboard/Doctor/DoctorRegisterForm";
+import UsersManagement from "./pages/Dashboard/Admin/UsersManagement";
+
 import VerifyEmail from "./pages/Authentication/verifyEmailPage";
-import 'react-toastify/dist/ReactToastify.css'; // Keep this for styles
+import 'react-toastify/dist/ReactToastify.css'; 
 import { ToastContainer } from "./components/Toast/CustomToast";
 
 const App = () => {
@@ -25,6 +34,7 @@ const App = () => {
         <Route path="/register/doctor" element={<DoctorRegister />} />
         <Route path="/booking" element={<UserBookingPage />} />
         <Route path="/booking/doctor" element={<DoctorSchedule />} />
+
       </Routes>
     </BrowserRouter>
   );

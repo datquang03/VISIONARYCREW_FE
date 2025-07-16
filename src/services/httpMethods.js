@@ -1,5 +1,6 @@
-import axios from "axios";
+
 import axiosClient from "../redux/APIs/axios";
+
 
 // [GET]
 const getRequest = async (url) => {
@@ -7,30 +8,17 @@ const getRequest = async (url) => {
     const res = await axiosClient.get(`${url}`);
     return res;
   } catch (error) {
-    return error;
+    return error.response ? error.response : { data: { message: error.message } };
   }
 };
 
 // [GET] -> params
 const getRequestParams = async (url, params) => {
   try {
-    const res = await axiosClient.get(`${url}`, { params: params });
+    const res = await axiosClient.get(`${url}`, { params });
     return res;
   } catch (error) {
-    return error;
-  }
-};
-
-const postRequestParams = async (url, params) => {
-  try {
-    // Convert newProduct object to query parameters
-    const queryString = new URLSearchParams(params).toString();
-    const fullUrl = queryString ? `${url}?${queryString}` : url;
-
-    const res = await axiosClient.post(fullUrl, null);
-    return res;
-  } catch (error) {
-    return error;
+    return error.response ? error.response : { data: { message: error.message } };
   }
 };
 
@@ -40,44 +28,29 @@ const postRequest = async (url, payload) => {
     const res = await axiosClient.post(`${url}`, payload);
     return res;
   } catch (error) {
-    return error;
+    return error.response ? error.response : { data: { message: error.message } };
   }
 };
-const postRequestMultipartFormData = async (url, payload) => {
-  try {
-    const res = await axios.post(`${url}`, payload, {
-      headers: {
-        Accept: "application/json, text/plain, */*",
-        ContentType: "multipart/form-data",
-        Authorization: sessionStorage.getItem("token"),
-      },
-    });
-    return res;
-  } catch (error) {
-    return error;
-  }
-};
-// [POST] -> multipart/form-data (file, ...)
+
+// [POST] -> multipart/form-data
 const postRequestFormData = async (url, payload) => {
   try {
     const res = await axiosClient.post(`${url}`, payload, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      headers: { "Content-Type": "multipart/form-data" },
     });
     return res;
   } catch (error) {
-    return error;
+    return error.response ? error.response : { data: { message: error.message } };
   }
 };
 
 // [DELETE]
 const deleteRequest = async (url, payload) => {
   try {
-    const res = await axiosClient.delete(`${url}`, payload);
+    const res = await axiosClient.delete(`${url}`, { data: payload });
     return res;
   } catch (error) {
-    return error;
+    return error.response ? error.response : { data: { message: error.message } };
   }
 };
 
@@ -87,44 +60,41 @@ const putRequest = async (url, payload) => {
     const res = await axiosClient.put(`${url}`, payload);
     return res;
   } catch (error) {
-    return error;
+    return error.response ? error.response : { data: { message: error.message } };
   }
 };
 
 // [PUT] -> params
 const putRequestParams = async (url, params) => {
   try {
-    // Convert params object to query parameters
     const queryString = new URLSearchParams(params).toString();
     const fullUrl = queryString ? `${url}?${queryString}` : url;
-
     const res = await axiosClient.put(fullUrl, null);
     return res;
   } catch (error) {
-    return error;
+    return error.response ? error.response : { data: { message: error.message } };
   }
 };
 
-// [PUT] -> multipart/form-data (file, ...)
+// [PUT] -> multipart/form-data
 const putRequestFormData = async (url, payload) => {
   try {
     const res = await axiosClient.put(`${url}`, payload, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      headers: { "Content-Type": "multipart/form-data" },
     });
     return res;
   } catch (error) {
-    return error;
+    return error.response ? error.response : { data: { message: error.message } };
   }
 };
+
 // [PATCH]
 const patchRequest = async (url, payload) => {
   try {
     const res = await axiosClient.patch(`${url}`, payload);
     return res;
   } catch (error) {
-    return error;
+    return error.response ? error.response : { data: { message: error.message } };
   }
 };
 
@@ -135,9 +105,7 @@ export {
   deleteRequest,
   putRequest,
   patchRequest,
-  postRequestParams,
   postRequestFormData,
   putRequestParams,
   putRequestFormData,
-  postRequestMultipartFormData,
 };

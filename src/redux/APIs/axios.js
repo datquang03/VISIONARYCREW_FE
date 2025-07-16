@@ -20,7 +20,16 @@ axiosClient.interceptors.request.use(
     }
     return config;
   },
+  (error) => Promise.reject(error)
+);
+
+axiosClient.interceptors.response.use(
+  (response) => response, // Trả về response nguyên bản
   (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("userInfo");
+      window.location.href = "/login";
+    }
     return Promise.reject(error);
   }
 );
