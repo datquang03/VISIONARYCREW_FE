@@ -25,7 +25,6 @@ import DoctorRegisterForm from "./pages/Dashboard/Doctor/DoctorRegisterForm";
 
 import { SidebarProvider } from "./pages/Dashboard/components/SidebarContext";
 
-import VerifyEmail from "./pages/Authentication/verifyEmailPage";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "./components/Toast/CustomToast";
 import {
