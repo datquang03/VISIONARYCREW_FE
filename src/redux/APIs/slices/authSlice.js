@@ -165,7 +165,7 @@ const authSlice = createSlice({
       .addCase(doctorLogin.fulfilled, (state, action) => {
         if (action.payload.status === 200 || action.payload.status === 201) {
           handleDangNhap(action.payload.data);
-          localStorage.setItem("userInfo", JSON.stringify(action.payload.data.user));
+          localStorage.setItem("userInfo", JSON.stringify(action.payload.data.doctor));
           state.isSuccess = true;
           state.isLoading = false;
           state.isError = false;
