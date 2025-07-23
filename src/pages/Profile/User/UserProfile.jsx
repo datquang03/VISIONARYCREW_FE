@@ -1,10 +1,11 @@
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getUserProfile, updateUserProfile } from '../../../redux/APIs/slices/userProfileSlice';
 import { CustomToast } from '../../../components/Toast/CustomToast';
 import ShortLoading from '../../../components/Loading/ShortLoading';
-
+import CustomButton from '../../../components/buttons/CustomButton';
 const tabs = ['profile', 'settings', 'activity'];
 
 const UserProfile = () => {
@@ -100,8 +101,8 @@ const UserProfile = () => {
           <motion.div
             key="activity"
             className="p-6 space-y-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0 }}
           >
             <h2 className="text-2xl font-bold text-gray-800">Hoạt động gần đây</h2>
@@ -117,11 +118,18 @@ const UserProfile = () => {
   };
 
   return (
+    // Remove overflow-hidden to avoid constraining fixed positioning
     <motion.div
-      className="min-h-screen overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center p-4"
+      className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
+      {/* Move CustomButton outside the flex container to avoid layout interference */}
+      <CustomButton
+        text="Back to Home"
+        to="/"
+        position="top-left"
+      />
       <motion.div
         layout
         className="profile-card max-w-2xl w-full bg-white rounded-xl shadow-2xl overflow-hidden"

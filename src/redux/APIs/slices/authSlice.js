@@ -98,6 +98,18 @@ export const getUserProfile = createAsyncThunk(
     }
   }
 );
+export const getDoctorProfile = createAsyncThunk(
+  "Account/getDoctorProfile",
+  async (doctorId, { rejectWithValue }) => {
+    try {
+      const response = await getRequest(`doctors/${doctorId}`);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Error fetching doctor");
+    }
+  }
+);
+
 
 const initialState = {
   user: null,
@@ -107,6 +119,7 @@ const initialState = {
   message: null,
   updatedUser: null,
   isSuccessReg: false,
+  doctor: null,
 };
 
 const authSlice = createSlice({
@@ -317,6 +330,31 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.isSuccess = false;
         state.isError = true;
+      })
+      .addCase(getDoctorProfile.pending, (state) => {
+        state.isLoading = true;
+        state.isSuccess = false;
+        state.isError = false;
+        state.doctor = null;
+      })
+      .addCase(getDoctorProfile.fulfilled, (state, action) => {
+        if (action.payload.status === 200 || action.payload.status === 201) {
+          state.isSuccess = true;
+          state.isLoading = false;
+          state.isError = false;
+          state.doctor = action.payload.data;
+        } else {
+          state.message = action.payload.data.message;
+          state.isSuccess = false;
+          state.isLoading = false;
+          state.isError = true;
+        }
+      })
+      .addCase(getDoctorProfile.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = false;
+        state.isError = true;
+        state.message = action.payload || "Failed to fetch doctor profile";
       })
   },
 });

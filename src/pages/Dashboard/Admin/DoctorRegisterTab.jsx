@@ -93,14 +93,8 @@ const DoctorRegisterTab = () => {
   };
 
   return (
-    <div
-      ref={contentRef}
-      className="relative p-6 bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-xl max-w-6xl mx-auto scroll-bar-hidden"
-    >
-     
-      {/* Blur + border background */}
-      <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-200 via-white to-blue-300 opacity-40 backdrop-blur-md border border-blue-100 shadow-inner -z-10" />
-
+    <div ref={contentRef}>
+      {/* Header */}
       <div className="flex items-center mb-6">
         <FaUserMd className="text-3xl text-blue-500 mr-3" />
         <h2 className="text-3xl font-bold text-gray-900">Quản lý đăng ký bác sĩ</h2>

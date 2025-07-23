@@ -3,8 +3,19 @@ import { FaVideo, FaUserMd, FaHospitalAlt } from "react-icons/fa";
 import { FaMessage, FaRobot, FaUserDoctor } from "react-icons/fa6";
 import { MdOutlinePayment } from "react-icons/md";
 import { IoNewspaper } from "react-icons/io5";
+import { BiPackage } from "react-icons/bi";
 
 const optionData = [
+  {
+    id: 1,
+    name: "Gói dịch vụ cho bác sĩ",
+    description: "Đăng ký gói dịch vụ để sử dụng các tính năng",
+    navigation: "/doctor/packages",
+    icon: (
+      <BiPackage className="text-8xl text-blue-600 absolute bottom-4 right-4" />
+    ),
+    bgColor: "bg-blue-200",
+  },
   {
     id: 2,
     name: "Tìm nơi khám gần bạn",

@@ -1,5 +1,6 @@
     import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
     import { getRequest, patchRequest } from "../../../services/httpMethods";
+    import { postRequestFormData } from "../../../services/httpMethods";
 
     // ===================== THUNKS =====================
     export const getPendingDoctors = createAsyncThunk(
@@ -44,14 +45,27 @@
 
     export const getDoctorByRegisterId = createAsyncThunk(
     "DoctorRegister/getDoctorByRegisterId",
-    async (doctorRegisterId, { rejectWithValue }) => {
+    async (_, { rejectWithValue }) => {
         try {
-        const response = await getRequest(`/doctors/register/${doctorRegisterId}`);
+        const response = await getRequest(`/doctors/register`);
         return response.data;
         } catch (error) {
         return rejectWithValue(error.response?.data || { message: "Error fetching doctor info" });
         }
     }
+    );
+
+    // Đăng ký lại cho bác sĩ bị từ chối
+    export const reRegisterDoctor = createAsyncThunk(
+      "DoctorRegister/reRegisterDoctor",
+      async (formData, { rejectWithValue }) => {
+        try {
+          const response = await postRequestFormData("/doctors/reregister", formData);
+          return response.data;
+        } catch (error) {
+          return rejectWithValue(error.response?.data || { message: "Error re-registering doctor" });
+        }
+      }
     );
 
     const initialState = {

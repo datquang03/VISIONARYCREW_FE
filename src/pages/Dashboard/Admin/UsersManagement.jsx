@@ -51,18 +51,33 @@ const UserDetailModal = ({ user, isOpen, onClose }) => {
 
   useEffect(() => {
     if (isOpen && modalRef.current) {
-      gsap.fromTo(modalRef.current, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.4 });
+      gsap.fromTo(
+        modalRef.current,
+        { opacity: 0, y: 50, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "power3.out" }
+      );
     }
   }, [isOpen]);
 
   if (!isOpen || !user) return null;
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 pt-30">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-opacity-30 backdrop-blur-sm">
       <div
         ref={modalRef}
-        className="bg-white rounded-xl p-8 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto scroll-bar-hidden"
+        className="bg-white rounded-xl p-6 w-full max-w-md md:max-w-lg max-h-[90vh] overflow-y-auto"
+        style={{
+          scrollbarWidth: "none", // Firefox
+          msOverflowStyle: "none", // IE/Edge
+        }}
       >
+        <style>
+          {`
+            .scroll-bar-hidden::-webkit-scrollbar {
+              display: none;
+            }
+          `}
+        </style>
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Chi tiết người dùng</h2>
         <div className="space-y-4 text-gray-700">
           <div className="flex items-center gap-4 mb-4">
@@ -70,11 +85,11 @@ const UserDetailModal = ({ user, isOpen, onClose }) => {
               <img
                 src={user.avatar}
                 alt={`${user.username}'s avatar`}
-                className="w-24 h-24 rounded-full object-cover border border-blue-200"
+                className="w-20 h-20 rounded-full object-cover border border-blue-200"
                 onError={(e) => (e.target.src = "/path/to/fallback-image.jpg")}
               />
             ) : (
-              <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-2xl">
+              <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-2xl">
                 {user.username.charAt(0).toUpperCase()}
               </div>
             )}
@@ -83,42 +98,14 @@ const UserDetailModal = ({ user, isOpen, onClose }) => {
               <p className="text-sm text-gray-600 capitalize">Role: {user.role}</p>
             </div>
           </div>
-          <p><strong>Email:</strong> {user.email}</p>
-          <p><strong>Phone:</strong> {user.phone || "Chưa cung cấp"}</p>
-          <p><strong>Address:</strong> {user.address || "Chưa cung cấp"}</p>
-          <p><strong>Date of birth:</strong> {user.dateOfBirth ? formatDate(user.dateOfBirth) : "Chưa cung cấp"}</p>
-          <p><strong>Ngày tạo:</strong> {new Date(user.createdAt).toLocaleDateString("vi-VN")}</p>
-          <p><strong>Ngày cập nhật:</strong> {user.updatedAt ? new Date(user.updatedAt).toLocaleDateString("vi-VN") : "Chưa cập nhật"}</p>
-          <p><strong>ID:</strong> {user._id}</p>
-          <div>
-            <strong>Chứng chỉ:</strong>
-            {user.certifications?.length ? (
-              <div>
-                <ul className="list-disc pl-5 mb-4">
-                  {user.certifications.map((cert, i) => (
-                    <li key={i}>{cert.description || `Chứng chỉ ${i + 1}`}</li>
-                  ))}
-                </ul>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {user.certifications.map((cert, i) => (
-                    cert.url && (
-                      <div key={i} className="flex flex-col items-center">
-                        <img
-                          src={cert.url}
-                          alt={`Chứng chỉ ${i + 1}`}
-                          className="w-32 h-32 object-cover rounded-lg"
-                          onError={(e) => (e.target.src = "/path/to/fallback-image.jpg")}
-                        />
-                        <p className="text-sm text-gray-600 mt-2">{cert.description || `Chứng chỉ ${i + 1}`}</p>
-                      </div>
-                    )
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <p className="italic">Không có chứng chỉ</p>
-            )}
-          </div>
+          <p className="break-words"><strong>Email:</strong> {user.email}</p>
+          <p className="break-words"><strong>Phone:</strong> {user.phone || "Chưa cung cấp"}</p>
+          <p className="break-words"><strong>Address:</strong> {user.address || "Chưa cung cấp"}</p>
+          <p className="break-words"><strong>Date of birth:</strong> {user.dateOfBirth ? formatDate(user.dateOfBirth) : "Chưa cung cấp"}</p>
+          <p className="break-words"><strong>Ngày tạo:</strong> {new Date(user.createdAt).toLocaleDateString("vi-VN")}</p>
+          <p className="break-words"><strong>Ngày cập nhật:</strong> {user.updatedAt ? new Date(user.updatedAt).toLocaleDateString("vi-VN") : "Chưa cập nhật"}</p>
+          <p className="break-words"><strong>ID:</strong> {user._id}</p>
+         
         </div>
         <div className="flex justify-end mt-6">
           <button
@@ -182,31 +169,8 @@ const UsersManagement = () => {
   };
 
   return (
-    <div
-      ref={wrapperRef}
-      className="relative bg-gradient-to-br from-gray-50 to-white p-6 rounded-xl shadow-xl max-w-6xl mx-auto"
-    >
-      <style>{`
-        .scroll-bar-hidden {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-        .scroll-bar-hidden::-webkit-scrollbar {
-          display: none;
-        }
-        .swiper-container {
-          width: 100%;
-          overflow: hidden;
-        }
-        .swiper-slide {
-          display: flex;
-          justify-content: center;
-          width: auto !important;
-        }
-      `}</style>
-
-      <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-200 via-white to-blue-300 opacity-40 backdrop-blur-md border border-blue-100 shadow-inner -z-10" />
-
+    <div ref={wrapperRef}>
+      {/* Header */}
       <div className="flex items-center mb-6">
         <FaUsers className="text-3xl text-blue-500 mr-3" />
         <h1 className="text-3xl font-bold text-gray-900">Quản lý Người Dùng</h1>
@@ -217,8 +181,7 @@ const UsersManagement = () => {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex items-cente
-            r gap-2 px-4 py-2 rounded-t-lg transition-all duration-300 text-sm font-medium whitespace-nowrap
+            className={`flex items-center gap-2 px-4 py-2 rounded-t-lg transition-all duration-300 text-sm font-medium whitespace-nowrap
               ${activeTab === tab.key
                 ? "bg-white shadow text-blue-600 border-b-2 border-blue-500"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
@@ -259,7 +222,7 @@ const UsersManagement = () => {
       )}
 
       {!isLoading && filteredUsers.length > 0 && (
-        <p className="mt-8 text-sm text-gray-500 text-center">
+        <p className="mt-8 text-sm text-gray-600 text-center">
           Tổng số người dùng: <strong>{totalUsers}</strong>
         </p>
       )}

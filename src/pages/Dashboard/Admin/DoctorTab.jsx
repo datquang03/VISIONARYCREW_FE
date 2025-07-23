@@ -58,17 +58,24 @@ const DoctorsTabPage = () => {
 
   useEffect(() => {
     if (showModal && modalRef.current) {
-      gsap.fromTo(modalRef.current, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.4 });
+      gsap.fromTo(
+        modalRef.current,
+        { opacity: 0, y: 50, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: 'power3.out' }
+      );
     }
   }, [showModal]);
 
   useEffect(() => {
     const handleEsc = (e) => {
-      if (e.key === 'Escape') setShowModal(false);
+      if (e.key === 'Escape') {
+        setShowModal(false);
+        setSelectedDoctor(null);
+      }
     };
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
-  }, [showModal]);
+  }, []);
 
   const filteredDoctors = allDoctors.filter((doc) => doc.doctorApplicationStatus === activeTab);
 
@@ -79,24 +86,7 @@ const DoctorsTabPage = () => {
   ];
 
   return (
-    <div
-      ref={wrapperRef}
-      className="relative bg-gradient-to-br from-gray-50 to-white p-6 rounded-xl shadow-xl max-w-6xl mx-auto"
-    >
-      <style>
-        {`
-          .scroll-bar-hidden {
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE 10+ */
-          }
-          .scroll-bar-hidden::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Edge */
-          }
-        `}
-      </style>
-      {/* Background Blur & Border */}
-      <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-200 via-white to-blue-300 opacity-40 backdrop-blur-md border border-blue-100 shadow-inner -z-10" />
-
+    <div ref={wrapperRef}>
       {/* Header */}
       <div className="flex items-center mb-6">
         <FaUserMd className="text-3xl text-blue-500 mr-3" />
@@ -150,11 +140,22 @@ const DoctorsTabPage = () => {
 
       {/* Modal */}
       {showModal && selectedDoctor && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm pt-50">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-opacity-30 backdrop-blur-sm">
           <div
             ref={modalRef}
-            className="bg-white p-8 rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto scroll-bar-hidden"
+            className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md md:max-w-lg max-h-[90vh] overflow-y-auto"
+            style={{
+              scrollbarWidth: 'none', // Firefox
+              msOverflowStyle: 'none', // IE/Edge
+            }}
           >
+            <style>
+              {`
+                .scroll-bar-hidden::-webkit-scrollbar {
+                  display: none;
+                }
+              `}
+            </style>
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Chi tiết bác sĩ</h2>
             <div className="space-y-4 text-gray-700">
               {selectedDoctor.avatar ? (
@@ -162,41 +163,41 @@ const DoctorsTabPage = () => {
                   <img
                     src={selectedDoctor.avatar}
                     alt="Avatar bác sĩ"
-                    className="w-24 h-24 rounded-full object-cover"
+                    className="w-20 h-20 rounded-full object-cover"
                     onError={(e) => (e.target.src = '/path/to/fallback-image.jpg')}
                   />
                 </div>
               ) : (
                 <p className="text-center text-gray-500 italic">Không có ảnh đại diện</p>
               )}
-              <p><strong>Họ tên:</strong> {selectedDoctor.fullName}</p>
-              <p><strong>Email:</strong> {selectedDoctor.email}</p>
-              <p><strong>SĐT:</strong> {selectedDoctor.phone}</p>
-              <p><strong>Địa chỉ:</strong> {selectedDoctor.address || 'Chưa cung cấp'}</p>
-              <p><strong>Loại bác sĩ:</strong> {selectedDoctor.doctorType}</p>
-              <p><strong>Nơi làm việc:</strong> {selectedDoctor.workplace || 'Chưa cung cấp'}</p>
-              <p><strong>Ngày sinh:</strong> {new Date(selectedDoctor.dateOfBirth).toLocaleDateString()}</p>
-              <p><strong>Ngày đăng ký:</strong> {new Date(selectedDoctor.createdAt).toLocaleDateString()}</p>
+              <p className="break-words"><strong>Họ tên:</strong> {selectedDoctor.fullName}</p>
+              <p className="break-words"><strong>Email:</strong> {selectedDoctor.email}</p>
+              <p className="break-words"><strong>SĐT:</strong> {selectedDoctor.phone}</p>
+              <p className="break-words"><strong>Địa chỉ:</strong> {selectedDoctor.address || 'Chưa cung cấp'}</p>
+              <p className="break-words"><strong>Loại bác sĩ:</strong> {selectedDoctor.doctorType}</p>
+              <p className="break-words"><strong>Nơi làm việc:</strong> {selectedDoctor.workplace || 'Chưa cung cấp'}</p>
+              <p className="break-words"><strong>Ngày sinh:</strong> {new Date(selectedDoctor.dateOfBirth).toLocaleDateString()}</p>
+              <p className="break-words"><strong>Ngày đăng ký:</strong> {new Date(selectedDoctor.createdAt).toLocaleDateString()}</p>
               <div>
                 <strong>Chứng chỉ:</strong>
                 {selectedDoctor.certifications?.length ? (
                   <div>
                     <ul className="list-disc pl-5 mb-4">
                       {selectedDoctor.certifications.map((cert, i) => (
-                        <li key={i}>{cert.description || `Chứng chỉ ${i + 1}`}</li>
+                        <li key={i} className="break-words">{cert.description || `Chứng chỉ ${i + 1}`}</li>
                       ))}
                     </ul>
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                       {selectedDoctor.certifications.map((cert, i) => (
                         cert.url && (
                           <div key={i} className="flex flex-col items-center">
                             <img
                               src={cert.url}
                               alt={`Chứng chỉ ${i + 1}`}
-                              className="w-32 h-32 object-cover rounded-lg"
+                              className="w-24 h-24 object-cover rounded-lg"
                               onError={(e) => (e.target.src = '/path/to/fallback-image.jpg')}
                             />
-                            <p className="text-sm text-gray-600 mt-2">{cert.description || `Chứng chỉ ${i + 1}`}</p>
+                            <p className="text-sm text-gray-600 mt-2 text-center break-words">{cert.description || `Chứng chỉ ${i + 1}`}</p>
                           </div>
                         )
                       ))}
@@ -209,7 +210,10 @@ const DoctorsTabPage = () => {
             </div>
             <div className="flex justify-end mt-6">
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => {
+                  setShowModal(false);
+                  setSelectedDoctor(null);
+                }}
                 className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
               >
                 Đóng

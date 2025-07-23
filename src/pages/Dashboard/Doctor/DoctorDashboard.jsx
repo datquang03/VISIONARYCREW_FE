@@ -1,11 +1,13 @@
-import React from 'react'
-import DashboardLayout from '../components/DashboardLayout'
+import React from 'react';
+import DashboardLayout from '../components/DashboardLayout';
+import { Outlet } from 'react-router-dom';
 
 const DoctorDashboard = () => {
   return (
-    <DashboardLayout role="doctor">
+    <DashboardLayout role="doctor" title="Doctor Dashboard">
+      <Outlet />
     </DashboardLayout>
-  )
-}
+  );
+};
 
-export default DoctorDashboard
+export default DoctorDashboard; 
