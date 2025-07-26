@@ -12,11 +12,50 @@ const ScheduleTable = ({
   onSlotDetail,
   doctorSchedules
 }) => {
-  const todayStr = new Date().toDateString();
+  const now = new Date(); 
+  const todayStr = now.toDateString();
+
   const days = getDaysOfWeek();
 
   const handleSlotDetail = (slot) => {
     if (typeof onSlotDetail === 'function') onSlotDetail(slot);
+  };
+
+  // Helper function to check if a slot is in the past, including time on the current day
+  const isSlotPast = (day, time) => {
+    // Debug: Log inputs to verify day and time
+    console.log(`Checking slot: Day=${day.toISOString()}, Time=${time}, Now=${now.toISOString()}`);
+
+    // Check if day is before today
+    const isPastDay = isPastSlot ? isPastSlot(day, time) : day < new Date(todayStr);
+    if (isPastDay) {
+      console.log(`Slot is past: Past day detected`);
+      return true;
+    }
+
+    // If it's today, check the time
+    if (day.toDateString() === todayStr) {
+      try {
+        const [start] = time.split(' - ');
+        const parseTime = (t) => {
+          let [h, m] = t.replace('AM', '').replace('PM', '').trim().split(':');
+          if (!m) m = '00';
+          h = parseInt(h, 10);
+          if (isNaN(h)) throw new Error(`Invalid hour in time: ${t}`);
+          if (t.includes('PM') && h !== 12) h += 12;
+          if (t.includes('AM') && h === 12) h = 0;
+          return new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, parseInt(m, 10));
+        };
+        const slotTime = parseTime(start);
+        const isPast = slotTime < now;
+        console.log(`Today slot: Time=${start}, Parsed=${slotTime.toISOString()}, IsPast=${isPast}`);
+        return isPast;
+      } catch (error) {
+        console.error(`Error parsing time '${time}':`, error);
+        return false; // Fallback to not past if parsing fails
+      }
+    }
+    return false;
   };
 
   return (
@@ -50,7 +89,7 @@ const ScheduleTable = ({
                   let slotObj = null;
                   let status = 'empty';
                   if (selectedDoctor && Array.isArray(doctorSchedules)) {
-                    const dateStr = day.toISOString().slice(0, 10); // Use ISO string for consistency
+                    const dateStr = day.toISOString().slice(0, 10);
                     const [start, end] = time.split(' - ');
                     const parseTime = (t) => {
                       let [h, m] = t.replace('AM', '').replace('PM', '').trim().split(':');
@@ -82,24 +121,26 @@ const ScheduleTable = ({
                   const isToday = day.toDateString() === todayStr;
                   let statusClass = 'hover:bg-gray-100';
                   let cellText = '';
-                  const past = isPastSlot ? isPastSlot(day, time) : false;
+                  const past = isSlotPast(day, time);
+                  
+                  // Debug: Log slot status and past state
+                  console.log(`Slot: Day=${day.toISOString().slice(0, 10)}, Time=${time}, Status=${status}, Past=${past}`);
                   
                   // Xác định status trước
                   if (status === 'booked-by-user') {
-                    // Slot đã đặt của user - luôn màu vàng dù quá khứ
                     statusClass = 'bg-yellow-400 text-white font-bold';
-                    cellText = 'đã đặt';
+                    cellText = 'Đã đặt';
                   } else if (status === 'booked-by-other') {
                     statusClass = 'bg-red-500 text-white font-bold';
-                    cellText = 'đã đặt';
+                    cellText = 'Đã đặt';
                   } else if (status === 'available') {
                     statusClass = 'bg-green-300 hover:bg-green-400';
                   } else if (status === 'doctor-free') {
                     statusClass = 'bg-green-500 text-white font-bold';
-                    cellText = 'trống';
+                    cellText = 'Trống';
                   }
                   
-                  // Nếu là slot quá khứ (trừ slot đã đặt của user), chuyển thành màu xám
+                  // Grey out past slots (except those booked by user)
                   if (past && status !== 'booked-by-user') {
                     statusClass = 'bg-gray-400 text-white cursor-not-allowed';
                     cellText = '';
@@ -113,16 +154,11 @@ const ScheduleTable = ({
                       }`}
                       onClick={() => {
                         if (selectedDoctor) {
-                          // Nếu là slot đã đặt bởi user hiện tại, luôn cho phép mở modal (dù quá khứ)
                           if (status === 'booked-by-user' && slotObj) {
                             handleSlotDetail({ ...slotObj, slotType: status });
-                          }
-                          // Nếu là slot trống hoặc available và không phải quá khứ, cho phép đặt lịch
-                          else if ((status === 'doctor-free' || status === 'available') && slotObj && !past) {
+                          } else if ((status === 'doctor-free' || status === 'available') && slotObj && !past) {
                             handleSlotDetail({ ...slotObj, slotType: status });
-                          }
-                          // Các trường hợp khác và không phải quá khứ
-                          else if (!past) {
+                          } else if (!past) {
                             handleSlotClick(selectedDoctor.id, day, time);
                           }
                         }
@@ -165,7 +201,7 @@ const ScheduleTable = ({
                   let slotObj = null;
                   let status = 'empty';
                   if (selectedDoctor && Array.isArray(doctorSchedules)) {
-                    const dateStr = day.toISOString().slice(0, 10); // Use ISO string for consistency
+                    const dateStr = day.toISOString().slice(0, 10);
                     const [start, end] = time.split(' - ');
                     const parseTime = (t) => {
                       let [h, m] = t.replace('AM', '').replace('PM', '').trim().split(':');
@@ -196,28 +232,30 @@ const ScheduleTable = ({
                   }
                   let bgClass = 'bg-white';
                   let text = '';
-                  const pastMobile = isPastSlot ? isPastSlot(day, time) : false;
+                  const pastMobile = isSlotPast(day, time);
+                  
+                  // Debug: Log slot status and past state
+                  console.log(`Mobile Slot: Day=${day.toISOString().slice(0, 10)}, Time=${time}, Status=${status}, Past=${pastMobile}`);
                   
                   // Xác định status trước
                   if (status === 'booked-by-user') {
-                    // Slot đã đặt của user - luôn màu vàng dù quá khứ
                     bgClass = 'bg-yellow-400 text-white font-bold';
-                    text = 'đã đặt';
+                    text = 'Đã đặt';
                   } else if (status === 'booked-by-other') {
                     bgClass = 'bg-red-500 text-white font-bold';
-                    text = 'đã đặt';
+                    text = 'Đã đặt';
                   } else if (status === 'available') {
                     bgClass = 'bg-green-200 text-green-800 hover:bg-green-300';
                     text = 'Có thể đặt';
                   } else if (status === 'doctor-free') {
                     bgClass = 'bg-green-500 text-white font-bold';
-                    text = 'trống';
+                    text = 'Trống';
                   } else {
                     bgClass = 'hover:bg-gray-100 text-gray-500';
                     text = currentUser.role === 'doctor' ? 'Tạo slot (+)' : 'Trống';
                   }
                   
-                  // Nếu là slot quá khứ (trừ slot đã đặt của user), chuyển thành màu xám
+                  // Grey out past slots (except those booked by user)
                   if (pastMobile && status !== 'booked-by-user') {
                     bgClass = 'bg-gray-400 text-white cursor-not-allowed';
                     text = '';
@@ -229,16 +267,11 @@ const ScheduleTable = ({
                       className={`w-full text-left px-4 py-3 ${bgClass} transition-all`}
                       onClick={() => {
                         if (selectedDoctor) {
-                          // Nếu là slot đã đặt bởi user hiện tại, luôn cho phép mở modal (dù quá khứ)
                           if (status === 'booked-by-user' && slotObj) {
                             handleSlotDetail({ ...slotObj, slotType: status });
-                          }
-                          // Nếu là slot trống hoặc available và không phải quá khứ, cho phép đặt lịch
-                          else if ((status === 'doctor-free' || status === 'available') && slotObj && !pastMobile) {
+                          } else if ((status === 'doctor-free' || status === 'available') && slotObj && !pastMobile) {
                             handleSlotDetail({ ...slotObj, slotType: status });
-                          }
-                          // Các trường hợp khác và không phải quá khứ
-                          else if (!pastMobile) {
+                          } else if (!pastMobile) {
                             handleSlotClick(selectedDoctor.id, day, time);
                           }
                         }
