@@ -22,6 +22,7 @@ const initialState = {
   isSuccess: false,
   isError: false,
   message: null,
+  globalLoading: false,
 };
 
 const adminSlice = createSlice({
@@ -36,17 +37,22 @@ const adminSlice = createSlice({
       state.isError = false;
       state.message = null;
     },
+    setGlobalLoading: (state, action) => {
+      state.globalLoading = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
       .addCase(getAllUsers.pending, (state) => {
         state.isLoading = true;
+        state.globalLoading = true;
         state.isSuccess = false;
         state.isError = false;
         state.message = null;
       })
       .addCase(getAllUsers.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.globalLoading = false;
         state.isSuccess = true;
         state.users = action.payload.users || [];
         state.totalUsers = action.payload.totalUsers || 0;
@@ -54,6 +60,7 @@ const adminSlice = createSlice({
       })
       .addCase(getAllUsers.rejected, (state, action) => {
         state.isLoading = false;
+        state.globalLoading = false;
         state.isSuccess = false;
         state.isError = true;
         state.users = [];
@@ -63,5 +70,5 @@ const adminSlice = createSlice({
   },
 });
 
-export const { resetAdminState } = adminSlice.actions;
+export const { resetAdminState, setGlobalLoading } = adminSlice.actions;
 export default adminSlice;

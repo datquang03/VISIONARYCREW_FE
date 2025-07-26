@@ -22,9 +22,9 @@ const DoctorProfile = () => {
     doctorType: '',
     description: '',
     address: '',
-    workplace: '',
     education: '',
     workExperience: '',
+    recentJob: '',
   });
   const profileCardRef = useRef(null);
 
@@ -38,13 +38,13 @@ const DoctorProfile = () => {
         fullName: doctor.fullName || '',
         email: doctor.email || '',
         phone: doctor.phone || '',
-        dateOfBirth: doctor.dateOfBirth || '', 
+        dateOfBirth: doctor.dateOfBirth || '',
         doctorType: doctor.doctorType || '',
         description: doctor.description || '',
         address: doctor.address || '',
-        workplace: doctor.workplace || '',
-        education: doctor.education?.length ? doctor.education.join(', ') : '',
-        workExperience: doctor.workExperience?.length ? doctor.workExperience.join(', ') : '',
+        education: Array.isArray(doctor.education) ? doctor.education.join(', ') : '',
+        workExperience: Array.isArray(doctor.workExperience) ? doctor.workExperience.join(', ') : '',
+        recentJob: doctor.recentJob || '',
       });
     }
   }, [doctor]);
@@ -129,6 +129,7 @@ const DoctorProfile = () => {
   };
 
   const renderTabContent = () => {
+    const isDisabled = doctor?.status !== 'accepted';
     switch (activeTab) {
       case 'profile':
         return (
@@ -150,9 +151,9 @@ const DoctorProfile = () => {
                 }}
               />
               <div className="space-y-2 w-full">
-                <Input label="Họ tên" name="fullName" value={formData.fullName} onChange={handleChange} />
-                <Input label="Email" name="email" value={formData.email} onChange={handleChange} />
-                <Input label="Số điện thoại" name="phone" value={formData.phone} onChange={handleChange} />
+                <Input label="Họ tên" name="fullName" value={formData.fullName} onChange={handleChange} disabled={isDisabled} />
+                <Input label="Email" name="email" value={formData.email} onChange={handleChange} disabled={isDisabled} />
+                <Input label="Số điện thoại" name="phone" value={formData.phone} onChange={handleChange} disabled={isDisabled} />
               </div>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
@@ -162,45 +163,44 @@ const DoctorProfile = () => {
                 type="date"
                 value={formData.dateOfBirth}
                 onChange={handleChange}
+                disabled={isDisabled}
               />
-              <Input label="Chuyên khoa" name="doctorType" value={formData.doctorType} onChange={handleChange} />
+              <Input label="Chuyên khoa" name="doctorType" value={formData.doctorType} onChange={handleChange} disabled={isDisabled} />
               <Input
                 label="Trạng thái đăng ký"
                 value={
-                  doctor?.doctorApplicationStatus === 'accepted'
+                  doctor?.status === 'accepted'
                     ? 'Đã chấp nhận'
-                    : doctor?.doctorApplicationStatus === 'pending'
+                    : doctor?.status === 'pending'
                     ? 'Chờ duyệt'
                     : 'Từ chối'
                 }
                 disabled
                 className={`font-semibold ${
-                  doctor?.doctorApplicationStatus === 'accepted' ? 'text-green-600' : 'text-yellow-600'
+                  doctor?.status === 'accepted' ? 'text-green-600' : 'text-yellow-600'
                 }`}
               />
               <Input label="Vai trò" value={doctor?.role || 'Chưa cập nhật'} disabled />
-              <Input label="Mô tả" name="description" value={formData.description} onChange={handleChange} />
-              <Input label="Địa chỉ" name="address" value={formData.address} onChange={handleChange} />
+              <Input label="Mô tả" name="description" value={formData.description} onChange={handleChange} disabled={isDisabled} />
+              <Input label="Địa chỉ" name="address" value={formData.address} onChange={handleChange} disabled={isDisabled} />
               <Input
-                label="Nơi làm việc"
-                name="workplace"
-                value={formData.workplace || 'Chưa cập nhật'}
-                onChange={handleChange}
+                label="Gói đăng ký"
+                value={doctor?.subscription?.packageType || 'Chưa cập nhật'}
+                disabled
               />
-              <Input label="Gói đăng ký" value={doctor?.subscriptionPackage || 'Chưa cập nhật'} disabled />
               <Input
                 label="Ngày bắt đầu đăng ký"
-                value={formatDate(doctor?.subscriptionStartDate)}
+                value={formatDate(doctor?.subscription?.startDate)}
                 disabled
               />
               <Input
                 label="Ngày kết thúc đăng ký"
-                value={formatDate(doctor?.subscriptionEndDate)}
+                value={formatDate(doctor?.subscription?.endDate)}
                 disabled
               />
               <Input
                 label="Ưu tiên"
-                value={doctor?.isPriority ? 'Có' : 'Không'}
+                value={doctor?.subscription?.isPriority ? 'Có' : 'Không'}
                 disabled
               />
               <Input label="Ngày tạo" value={formatDate(doctor?.createdAt)} disabled />
@@ -209,12 +209,12 @@ const DoctorProfile = () => {
  />
               <Input
                 label="Giới hạn lịch hàng tuần"
-                value={`${doctor?.scheduleLimits?.weekly || 0} (Đã dùng: ${doctor?.scheduleLimits?.used || 0})`}
+                value={`${doctor?.subscription?.scheduleLimits?.weekly || 0} (Đã dùng: ${doctor?.subscription?.scheduleLimits?.used || 0})`}
                 disabled
               />
               <Input
                 label="Ngày đặt lại lịch"
-                value={formatDate(doctor?.scheduleLimits?.resetDate)}
+                value={formatDate(doctor?.subscription?.scheduleLimits?.resetDate)}
                 disabled
               />
               <Input
@@ -222,19 +222,39 @@ const DoctorProfile = () => {
                 value={doctor?.rejectionMessage || 'Không có'}
                 disabled
               />
+              {/* Học vấn */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Học vấn</label>
+                {Array.isArray(doctor?.education) && doctor.education.length > 0 ? (
+                  <ul className="list-disc pl-5 text-sm text-gray-700">
+                    {doctor.education.map(e => (
+                      <li key={e._id}>{e.institution} - {e.degree} ({e.year})</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <span className="text-gray-400">Chưa cập nhật</span>
+                )}
+              </div>
+              {/* Kinh nghiệm làm việc */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Kinh nghiệm làm việc</label>
+                {Array.isArray(doctor?.workExperience) && doctor.workExperience.length > 0 ? (
+                  <ul className="list-disc pl-5 text-sm text-gray-700">
+                    {doctor.workExperience.map(w => (
+                      <li key={w._id}>{w.workplace} - {w.position} ({w.startYear} - {w.endYear})</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <span className="text-gray-400">Chưa cập nhật</span>
+                )}
+              </div>
               <Input
-                label="Học vấn"
-                name="education"
-                value={formData.education}
+                label="Công việc gần đây"
+                name="recentJob"
+                value={formData.recentJob}
                 onChange={handleChange}
-                placeholder="Nhập học vấn, cách nhau bằng dấu phẩy"
-              />
-              <Input
-                label="Kinh nghiệm làm việc"
-                name="workExperience"
-                value={formData.workExperience}
-                onChange={handleChange}
-                placeholder="Nhập kinh nghiệm làm việc, cách nhau bằng dấu phẩy"
+                disabled={isDisabled}
+                placeholder="Nhập công việc gần đây"
               />
             </div>
             <div className="space-y-2">
@@ -261,7 +281,8 @@ const DoctorProfile = () => {
             </div>
             <button
               onClick={handleUpdate}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg"
+              disabled={isDisabled}
+              className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               onMouseEnter={(e) => gsap.to(e.target, { scale: 1.05, duration: 0.3 })}
               onMouseLeave={(e) => gsap.to(e.target, { scale: 1, duration: 0.3 })}
             >
@@ -295,7 +316,7 @@ const DoctorProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center pt-20 md:pt-4 pb-24 md:pb-4 bg-gradient-to-br from-blue-100 to-purple-100 p-4">
       <Link
         to="/"
         className="fixed top-4 left-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-shadow duration-300 flex items-center gap-2 group"
@@ -315,7 +336,7 @@ const DoctorProfile = () => {
       </Link>
       <div
         ref={profileCardRef}
-        className="profile-card max-w-2xl w-full bg-white rounded-xl shadow-2xl overflow-hidden"
+        className="profile-card max-w-xl w-full bg-white rounded-xl shadow-2xl overflow-hidden"
       >
         {isLoading && <ShortLoading text="Đang tải thông tin bác sĩ..." />}
         {isError && <div className="p-6 text-center text-red-500">{message}</div>}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getDoctorByRegisterId, reRegisterDoctor } from '../../../redux/APIs/slices/doctorRegisterSlice';
 import { FaPlus, FaTimesCircle } from 'react-icons/fa';
+import ShortLoading from '../../../components/Loading/ShortLoading';
 
 const statusColor = {
   pending: 'text-yellow-700 bg-yellow-100',
@@ -579,7 +580,7 @@ const DoctorRegisterForm = () => {
                 )}
                 {isEditing && (
                   <button type="submit" className="px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600 transition-all font-semibold" disabled={loadingSave}>
-                    {loadingSave ? 'Đang lưu...' : 'Lưu thay đổi'}
+                    {loadingSave ? <ShortLoading text="Đang lưu" /> : 'Lưu thay đổi'}
                   </button>
                 )}
               </div>

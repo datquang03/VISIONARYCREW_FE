@@ -2,6 +2,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ConfirmModal } from '../../../components/modal/ConfirmModal';
+import { useDispatch, useSelector } from 'react-redux';
+import { createSchedule, getMySchedules, updateSchedule, deleteSchedule, rejectRegisterSchedule } from '../../../redux/APIs/slices/scheduleSlice';
+import { CustomToast } from '../../../components/Toast/CustomToast';
+import UserScheduleDetailModal from '../../../components/modal/UserScheduleDetailModal';
 
 const DoctorScheduleTable = ({
   currentUser,
@@ -14,20 +18,116 @@ const DoctorScheduleTable = ({
   const days = getDaysOfWeek();
   const todayStr = new Date().toDateString();
   const [confirmData, setConfirmData] = useState(null);
+  const [detailModal, setDetailModal] = useState(null);
+  const dispatch = useDispatch();
+  const { loading, mySchedules = [] } = useSelector(state => state.scheduleSlice);
+
+  // Định dạng ngày về yyyy-mm-dd
+  const formatDate = (date) => {
+    if (!date) return '';
+    if (typeof date === 'string') return date.slice(0, 10);
+    return date.toISOString().split('T')[0];
+  };
 
   const handleSlotClick = (day, time) => {
-    if (!isSlotAvailable(currentUser.id, day, time)) {
-      setConfirmData({ day, time });
+    // Tìm slot đã đặt nếu có
+    const slot = (Array.isArray(mySchedules) ? mySchedules : []).find(slot => {
+      const dateStr = formatDate(day);
+      const [start, end] = time.split(' - ');
+      const parseTime = (t) => {
+        let [h, m] = t.replace('AM', '').replace('PM', '').trim().split(':');
+        if (!m) m = '00';
+        h = h.padStart(2, '0');
+        return `${h}:${m}`;
+      };
+      const startTime = parseTime(start);
+      const endTime = parseTime(end);
+      return slot.date?.slice(0, 10) === dateStr &&
+        slot.timeSlot?.startTime === startTime &&
+        slot.timeSlot?.endTime === endTime;
+    });
+    let slotStatus = '';
+    if (slot) {
+      if (slot.patient) {
+        slotStatus = 'booked';
+      } else {
+        slotStatus = 'created';
+      }
+    }
+    if (slotStatus === 'booked') {
+      setDetailModal({ ...slot, slotType: 'booked-by-user' });
+    } else if (slotStatus === 'created') {
+      setConfirmData({ day, time, slot }); // cho phép update/delete
+    } else {
+      setConfirmData({ day, time }); // slot mới
     }
   };
 
-  const handleConfirm = () => {
-    handleCreateAvailableSlot(currentUser.id, confirmData.day, confirmData.time);
-    setConfirmData(null);
+  // Xử lý tạo mới, cập nhật, xóa lịch
+  const handleConfirm = async (scheduleData, mode = 'create', scheduleId = null) => {
+    try {
+      if (mode === 'update' && scheduleId) {
+        await dispatch(updateSchedule({ scheduleId, updates: scheduleData })).unwrap();
+        CustomToast({ message: 'Cập nhật lịch thành công!', type: 'success' });
+      } else if (mode === 'delete' && scheduleId) {
+        await dispatch(deleteSchedule(scheduleId)).unwrap();
+        CustomToast({ message: 'Xóa lịch thành công!', type: 'success' });
+      } else {
+        await dispatch(createSchedule(scheduleData)).unwrap();
+        CustomToast({ message: 'Tạo lịch thành công!', type: 'success' });
+      }
+      dispatch(getMySchedules());
+      setConfirmData(null);
+    } catch (err) {
+      CustomToast({ message: err?.message || 'Thao tác thất bại!', type: 'error' });
+    }
   };
 
   const handleCancel = () => {
     setConfirmData(null);
+  };
+
+  const TickCircle = () => (
+    <span className="flex items-center justify-center w-9 h-9 rounded-full bg-green-500 text-white text-xl mx-auto shadow-md">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+      </svg>
+    </span>
+  );
+
+  // Hàm kiểm tra slot thuộc quá khứ
+  const isPastSlot = (date, time) => {
+    const now = new Date();
+    const slotDate = new Date(date);
+    // Nếu ngày nhỏ hơn hôm nay => quá khứ
+    if (slotDate.setHours(0,0,0,0) < now.setHours(0,0,0,0)) return true;
+    // Nếu là hôm nay, kiểm tra giờ kết thúc
+    if (slotDate.setHours(0,0,0,0) === now.setHours(0,0,0,0)) {
+      const [start, end] = time.split(' - ');
+      let [endHour, endMin] = end.replace('AM', '').replace('PM', '').trim().split(':');
+      if (!endMin) endMin = '00';
+      endHour = parseInt(endHour);
+      endMin = parseInt(endMin);
+      // Nếu là PM và < 12h thì cộng 12h
+      if (end.includes('PM') && endHour < 12) endHour += 12;
+      const slotEnd = new Date(slotDate);
+      slotEnd.setHours(endHour, endMin, 0, 0);
+      return slotEnd < now;
+    }
+    return false;
+  };
+
+  const handleRejectBooking = async (scheduleId, rejectedReason) => {
+    try {
+      await dispatch(
+        rejectRegisterSchedule({ scheduleId, rejectedReason })
+      ).unwrap();
+      CustomToast({ message: 'Từ chối lịch hẹn thành công!', type: 'success' });
+      dispatch(getMySchedules());
+      setDetailModal(null);
+    } catch (err) {
+      CustomToast({ message: err?.message || 'Từ chối lịch thất bại!', type: 'error' });
+    }
   };
 
   return (
@@ -42,25 +142,57 @@ const DoctorScheduleTable = ({
         </div>
 
         {/* Mobile Table (Stacked) */}
-        <div className="md:hidden divide-y divide-gray-200">
+        <div className="md:hidden divide-y divide-gray-200 overflow-x-auto">
           {timeSlots.map((time, rowIdx) => (
-            <div key={rowIdx} className="p-4">
-              <div className="font-semibold text-gray-800 mb-2">{time}</div>
+            <div key={rowIdx} className="p-2">
+              <div className="font-semibold text-gray-800 mb-2 text-xs">{time}</div>
               <div className="grid grid-cols-4 gap-2 text-sm">
                 {days.map((day, i) => {
-                  const isAvailable = isSlotAvailable(currentUser.id, day, time);
+                  const slot = (Array.isArray(mySchedules) ? mySchedules : []).find(slot => {
+                    const dateStr = formatDate(day);
+                    const [start, end] = time.split(' - ');
+                    const parseTime = (t) => {
+                      let [h, m] = t.replace('AM', '').replace('PM', '').trim().split(':');
+                      if (!m) m = '00';
+                      h = h.padStart(2, '0');
+                      return `${h}:${m}`;
+                    };
+                    const startTime = parseTime(start);
+                    const endTime = parseTime(end);
+                    return slot.date?.slice(0, 10) === dateStr &&
+                      slot.timeSlot?.startTime === startTime &&
+                      slot.timeSlot?.endTime === endTime;
+                  });
+                  let slotStatus = '';
+                  if (slot) {
+                    if (slot.patient) {
+                      slotStatus = 'booked'; // Đã được book
+                    } else {
+                      slotStatus = 'created'; // Đã tạo nhưng chưa ai book
+                    }
+                  }
+                  const isAvailable = !!slot;
                   const isToday = day.toDateString() === todayStr;
                   return (
                     <div
                       key={i}
-                      onClick={() => handleSlotClick(day, time)}
-                      className={`rounded-lg p-2 text-center cursor-pointer border transition duration-200
-                        ${isAvailable ? 'bg-green-300 text-black' : 'bg-gray-100 hover:bg-gray-200'}
-                        ${isToday ? 'ring-2 ring-green-400' : ''}`}
+                      onClick={() => {
+                        if (!isPastSlot(day, time)) handleSlotClick(day, time);
+                      }}
+                      className={`rounded-lg text-center border transition duration-300 flex flex-col items-center justify-center min-h-[48px] min-w-[48px] max-w-[60px] max-h-[60px] mx-auto p-1
+                        ${isPastSlot(day, time) ? 'bg-gray-200 cursor-not-allowed' : 'cursor-pointer'}
+                        ${isToday ? 'ring-2 ring-green-400' : ''}
+                        ${slotStatus === 'booked' ? 'bg-yellow-400 text-white font-bold' : ''}
+                        ${slotStatus === 'created' ? 'bg-blue-400 text-white font-bold' : ''}`}
                     >
-                      <div className="font-bold">T{(day.getDay() || 7)}</div>
-                      <div className="text-xs">{`${day.getDate()}/${day.getMonth() + 1}`}</div>
-                      <div className="mt-1">{isAvailable ? '✓' : '+'}</div>
+                      <div className="font-bold text-xs">{day.getDay() === 0 ? 'CN' : `T${day.getDay() + 1}`}</div>
+                      <div className="text-[10px]">{`${day.getDate()}/${day.getMonth() + 1}`}</div>
+                      <div className="mt-1 flex items-center justify-center">
+                        {slotStatus === 'booked' && <span>đã đặt</span>}
+                        {slotStatus === 'created' && <span>chờ đặt</span>}
+                        {!slot && !isPastSlot(day, time) && <span className="text-xl text-green-500 font-bold">+</span>}
+                        {isPastSlot(day, time) && <span className="text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M18.364 5.636l-12.728 12.728M5.636 5.636l12.728 12.728" /></svg></span>}
+                      </div>
                     </div>
                   );
                 })}
@@ -71,16 +203,16 @@ const DoctorScheduleTable = ({
 
         {/* Desktop Table */}
         <div className="hidden md:block">
-          <table className="w-full text-center">
+          <table className="w-full text-center min-w-[1050px]">
             <thead>
               <tr className="bg-gray-100 text-gray-800">
-                <th className="p-2 border">Giờ</th>
+                <th className="p-1 border w-[90px] md:w-[120px] text-xs md:text-base">Giờ</th>
                 {days.map((day, i) => (
                   <th
                     key={i}
-                    className={`p-2 border ${day.toDateString() === todayStr ? 'bg-green-100 text-green-700' : ''}`}
+                    className={`p-1 md:p-2 border w-[60px] md:w-[100px] ${day.toDateString() === todayStr ? 'bg-green-100 text-green-700' : ''}`}
                   >
-                    {`T${(day.getDay() || 7)}`}<br />
+                    {day.getDay() === 0 ? 'CN' : `T${day.getDay() + 1}`}<br />
                     {`${day.getDate()}/${day.getMonth() + 1}`}
                   </th>
                 ))}
@@ -89,19 +221,52 @@ const DoctorScheduleTable = ({
             <tbody>
               {timeSlots.map((time, rowIdx) => (
                 <tr key={rowIdx}>
-                  <td className="border p-2 font-medium text-gray-700 bg-gray-50">{time}</td>
+                  <td className="border p-1 md:p-2 font-medium text-gray-700 bg-gray-50 w-[90px] md:w-[120px] text-xs md:text-base">{time}</td>
                   {days.map((day, colIdx) => {
-                    const isAvailable = isSlotAvailable(currentUser.id, day, time);
+                    const slot = (Array.isArray(mySchedules) ? mySchedules : []).find(slot => {
+                      const dateStr = formatDate(day);
+                      const [start, end] = time.split(' - ');
+                      const parseTime = (t) => {
+                        let [h, m] = t.replace('AM', '').replace('PM', '').trim().split(':');
+                        if (!m) m = '00';
+                        h = h.padStart(2, '0');
+                        return `${h}:${m}`;
+                      };
+                      const startTime = parseTime(start);
+                      const endTime = parseTime(end);
+                      return slot.date?.slice(0, 10) === dateStr &&
+                        slot.timeSlot?.startTime === startTime &&
+                        slot.timeSlot?.endTime === endTime;
+                    });
+                    let slotStatus = '';
+                    if (slot) {
+                      if (slot.patient) {
+                        slotStatus = 'booked';
+                      } else {
+                        slotStatus = 'created';
+                      }
+                    }
+                    const isAvailable = !!slot;
                     const isToday = day.toDateString() === todayStr;
                     return (
                       <td
                         key={colIdx}
-                        className={`border h-16 cursor-pointer transition duration-200
-                          ${isAvailable ? 'bg-green-300 text-black' : 'hover:bg-gray-100'}
-                          ${isToday ? 'bg-green-50 border-l-2 border-green-400' : ''}`}
-                        onClick={() => handleSlotClick(day, time)}
+                        className={`border transition duration-300 align-middle
+                          w-[80px] h-[60px] md:w-[120px] md:h-[100px] p-0
+                          ${isPastSlot(day, time) ? 'bg-gray-200 cursor-not-allowed' : 'cursor-pointer'}
+                          ${isToday ? 'bg-green-50 border-l-2 border-green-400' : ''}
+                          ${slotStatus === 'booked' ? 'bg-yellow-400 text-white font-bold' : ''}
+                          ${slotStatus === 'created' ? 'bg-blue-400 text-white font-bold' : ''}`}
+                        onClick={() => {
+                          if (!isPastSlot(day, time)) handleSlotClick(day, time);
+                        }}
                       >
-                        {isAvailable ? '✓' : '+'}
+                        <div className="flex items-center justify-center h-full w-full min-h-[60px] min-w-[80px] md:min-h-[100px] md:min-w-[120px]">
+                          {slotStatus === 'booked' && <span>đã đặt</span>}
+                          {slotStatus === 'created' && <span>chờ đặt</span>}
+                          {!slot && !isPastSlot(day, time) && <span className="text-2xl text-green-500 font-bold">+</span>}
+                          {isPastSlot(day, time) && <span className="text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M18.364 5.636l-12.728 12.728M5.636 5.636l12.728 12.728" /></svg></span>}
+                        </div>
                       </td>
                     );
                   })}
@@ -115,10 +280,31 @@ const DoctorScheduleTable = ({
       {/* Confirm Modal */}
       {confirmData && (
         <ConfirmModal
-          onConfirm={handleConfirm}
+          onConfirm={(data) => {
+            if (confirmData.slot) {
+              handleConfirm(data, 'update', confirmData.slot._id);
+            } else {
+              handleConfirm(data, 'create');
+            }
+          }}
+          onDelete={confirmData.slot ? () => handleConfirm({}, 'delete', confirmData.slot._id) : undefined}
           onCancel={handleCancel}
           time={confirmData.time}
           date={confirmData.day}
+          defaultValues={confirmData.slot ? {
+            appointmentType: confirmData.slot.appointmentType,
+            notes: confirmData.slot.notes,
+            meetingLink: confirmData.slot.meetingLink,
+          } : undefined}
+        />
+      )}
+
+      {/* Modal chi tiết lịch đã đặt */}
+      {detailModal && (
+        <UserScheduleDetailModal
+          slot={detailModal}
+          onClose={() => setDetailModal(null)}
+          onRejectBooking={handleRejectBooking}
         />
       )}
     </>

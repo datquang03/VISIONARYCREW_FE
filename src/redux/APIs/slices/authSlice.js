@@ -5,7 +5,7 @@ import {
   postRequest,
   postRequestFormData,
 } from "../../../services/httpMethods";
-import { handleDangNhap } from "../axios";
+import axiosClient from "../axios";
 
 export const login = createAsyncThunk("Account/login", async (values) => {
   try {
@@ -16,7 +16,7 @@ export const login = createAsyncThunk("Account/login", async (values) => {
   }
 });
 
-export const doctorLogin = createAsyncThunk("Account/doctorLogin ", async (values) => {
+export const doctorLogin = createAsyncThunk("Account/doctorLogin", async (values) => {
   try {
     const res = await postRequest("doctors/login", values);
     return res;
@@ -98,28 +98,18 @@ export const getUserProfile = createAsyncThunk(
     }
   }
 );
-export const getDoctorProfile = createAsyncThunk(
-  "Account/getDoctorProfile",
-  async (doctorId, { rejectWithValue }) => {
-    try {
-      const response = await getRequest(`doctors/${doctorId}`);
-      return response;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || "Error fetching doctor");
-    }
-  }
-);
+// Removed duplicate getDoctorProfile - use the one from doctorProfileSlice instead
 
 
 const initialState = {
   user: null,
+  doctor: null,
   isLoading: false,
   isSuccess: false,
   isError: null,
   message: null,
   updatedUser: null,
   isSuccessReg: false,
-  doctor: null,
 };
 
 const authSlice = createSlice({
@@ -128,7 +118,9 @@ const authSlice = createSlice({
   reducers: {
     logout(state) {
       localStorage.removeItem("userInfo");
+      localStorage.removeItem("doctorInfo");
       state.user = null;
+      state.doctor = null;
       state.isSuccess = false;
       state.isLoading = false;
       state.isError = false;
@@ -138,85 +130,146 @@ const authSlice = createSlice({
       state.isSuccess = false;
       state.isSuccessReg = false;
       state.message = null;
-      state.isError = null
-      state.isLoading = false
+      state.isError = null;
+      state.isLoading = false;
+      // Không reset user/doctor data để giữ thông tin đăng nhập
+    },
+    resetForm(state) {
+      // Reset chỉ form state, giữ nguyên auth data
+      state.isSuccess = false;
+      state.isSuccessReg = false;
+      state.message = null;
+      state.isError = null;
+      state.isLoading = false;
+    },
+    initializeAuth(state) {
+      // Khởi tạo auth state từ localStorage
+      const userInfo = localStorage.getItem("userInfo");
+      if (userInfo) {
+        try {
+          const parsedUserInfo = JSON.parse(userInfo);
+          if (parsedUserInfo.role === "user") {
+            state.user = parsedUserInfo;
+            state.doctor = null;
+          } else if (parsedUserInfo.role === "doctor") {
+            state.doctor = parsedUserInfo;
+            state.user = null;
+          }
+          
+          // Cập nhật axios headers
+          if (parsedUserInfo.token) {
+            axiosClient.defaults.headers.common["Authorization"] = `Bearer ${parsedUserInfo.token}`;
+          }
+        } catch (error) {
+          console.error("Error parsing userInfo:", error);
+          localStorage.removeItem("userInfo");
+        }
+      }
     },
   },
   extraReducers: (builder) => {
     builder
+      // User Login
       .addCase(login.pending, (state) => {
         state.isLoading = true;
         state.isSuccess = false;
         state.isError = false;
+        state.message = null;
       })
       .addCase(login.fulfilled, (state, action) => {
-        if (action.payload.status === 200 || action.payload.status === 201) {
-          handleDangNhap(action.payload.data);
-          localStorage.setItem("userInfo", JSON.stringify(action.payload.data.user));
+        if (action.payload && (action.payload.status === 200 || action.payload.status === 201)) {
+          // Lưu user data vào localStorage
+          const userData = {
+            ...action.payload.data.user,
+            role: action.payload.data.user.role || "user"
+          };
+          localStorage.setItem("userInfo", JSON.stringify(userData));
+          // Cập nhật axios headers
+          if (userData.token) {
+            axiosClient.defaults.headers.common["Authorization"] = `Bearer ${userData.token}`;
+          }
           state.isSuccess = true;
           state.isLoading = false;
           state.isError = false;
           state.message = action.payload.data.message;
+          state.user = userData;
+          state.doctor = null; // Reset doctor state
         } else {
-        console.log(action.payload.status)
-          state.message = action.payload.data.message;
+          state.message = action.payload?.data?.message || action.payload?.message || "Đăng nhập thất bại";
           state.isSuccess = false;
           state.isLoading = false;
           state.isError = true;
         }
       })
-      .addCase(login.rejected, (state) => {
+      .addCase(login.rejected, (state, action) => {
         state.isLoading = false;
         state.isSuccess = false;
         state.isError = true;
+        state.message = action.payload?.data?.message || action.payload?.message || "Đăng nhập thất bại";
       })
+      
+      // Doctor Login
       .addCase(doctorLogin.pending, (state) => {
         state.isLoading = true;
         state.isSuccess = false;
         state.isError = false;
+        state.message = null;
       })
       .addCase(doctorLogin.fulfilled, (state, action) => {
-        if (action.payload.status === 200 || action.payload.status === 201) {
-          handleDangNhap(action.payload.data);
-          localStorage.setItem("userInfo", JSON.stringify(action.payload.data.doctor));
+        if (action.payload && (action.payload.status === 200 || action.payload.status === 201)) {
+          // Lưu doctor data vào localStorage
+          const doctorData = {
+            ...action.payload.data.doctor,
+            role: "doctor"
+          };
+          localStorage.setItem("userInfo", JSON.stringify(doctorData));
+          // Cập nhật axios headers
+          if (doctorData.token) {
+            axiosClient.defaults.headers.common["Authorization"] = `Bearer ${doctorData.token}`;
+          }
           state.isSuccess = true;
           state.isLoading = false;
           state.isError = false;
           state.message = action.payload.data.message;
+          state.doctor = doctorData;
+          state.user = null; // Reset user state
         } else {
-          state.message = action.payload.data.message;
+          state.message = action.payload?.data?.message || action.payload?.message || "Đăng nhập thất bại";
           state.isSuccess = false;
           state.isLoading = false;
           state.isError = true;
         }
       })
-      .addCase(doctorLogin.rejected, (state) => {
+      .addCase(doctorLogin.rejected, (state, action) => {
         state.isLoading = false;
         state.isSuccess = false;
         state.isError = true;
+        state.message = action.payload?.data?.message || action.payload?.message || "Đăng nhập thất bại";
       })
+
       .addCase(registerAcc.pending, (state) => {
         state.isLoading = true;
         state.isSuccessReg = false;
         state.isError = false;
       })
       .addCase(registerAcc.fulfilled, (state, action) => {
-        if (action.payload.status === 200 || action.payload.status === 201) {
+        if (action.payload && (action.payload.status === 200 || action.payload.status === 201)) {
           state.isSuccessReg = true;
           state.isLoading = false;
           state.isError = false;
           state.message = action.payload.data.message;
         } else {
-          state.message = action.payload.response.data.message;
+          state.message = action.payload?.data?.message || action.payload?.message || "Đăng ký thất bại";
           state.isSuccessReg = false;
           state.isLoading = false;
           state.isError = true;
         }
       })
-      .addCase(registerAcc.rejected, (state) => {
+      .addCase(registerAcc.rejected, (state, action) => {
         state.isLoading = false;
         state.isSuccessReg = false;
         state.isError = true;
+        state.message = action.payload?.data?.message || action.payload?.message || "Đăng ký thất bại";
       })
       .addCase(doctorRegisterAcc.pending, (state) => {
         state.isLoading = true;
@@ -331,34 +384,10 @@ const authSlice = createSlice({
         state.isSuccess = false;
         state.isError = true;
       })
-      .addCase(getDoctorProfile.pending, (state) => {
-        state.isLoading = true;
-        state.isSuccess = false;
-        state.isError = false;
-        state.doctor = null;
-      })
-      .addCase(getDoctorProfile.fulfilled, (state, action) => {
-        if (action.payload.status === 200 || action.payload.status === 201) {
-          state.isSuccess = true;
-          state.isLoading = false;
-          state.isError = false;
-          state.doctor = action.payload.data;
-        } else {
-          state.message = action.payload.data.message;
-          state.isSuccess = false;
-          state.isLoading = false;
-          state.isError = true;
-        }
-      })
-      .addCase(getDoctorProfile.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isSuccess = false;
-        state.isError = true;
-        state.message = action.payload || "Failed to fetch doctor profile";
-      })
+      // Removed getDoctorProfile cases - use doctorProfileSlice instead
   },
 });
 
-export const { logout, setNull } = authSlice.actions;
+export const { logout, setNull, initializeAuth, resetForm } = authSlice.actions;
 
 export default authSlice;

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { FaUserMd, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import CustomButton from '../../../components/buttons/CustomButton';
 import { CustomToast } from '../../../components/Toast/CustomToast';
-import { doctorLogin, setNull } from '../../../redux/APIs/slices/authSlice';
+import { doctorLogin, resetForm } from '../../../redux/APIs/slices/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -30,7 +30,8 @@ const DoctorLogin = () => {
   useEffect(() => {
     if (isError) {
       CustomToast({ message, type: "error" });
-      setTimeout(() => dispatch(setNull()), 200);
+      // Không reset form ngay lập tức, để user có thể thử lại
+      // setTimeout(() => dispatch(resetForm()), 200);
     }
     if (isSuccess) {
       CustomToast({ message, type: "success" });
@@ -38,18 +39,20 @@ const DoctorLogin = () => {
         username: "",
         password: "",
       });
-      setTimeout(() => {
-        dispatch(setNull());
-        navigate("/");
-      }, 2000);
+      // Chuyển hướng ngay lập tức sau khi login thành công
+      navigate("/doctor", { replace: true });
+      // Không reset state để giữ thông tin doctor
     }
   }, [isSuccess, isError, dispatch, navigate]);
 
-  useEffect(() => {
-    return () => {
-      dispatch(setNull());
-    };
-  }, [dispatch]);
+  // Không reset state khi component unmount để giữ thông tin đăng nhập
+  // useEffect(() => {
+  //   return () => {
+  //     if (!isSuccess) {
+  //       dispatch(resetForm());
+  //     }
+  //   };
+  // }, [dispatch, isSuccess]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-200 to-cyan-300 px-4 relative">

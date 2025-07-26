@@ -44,7 +44,8 @@ axiosClient.interceptors.request.use(
 axiosClient.interceptors.response.use(
   (response) => response, // Trả về response nguyên bản
   (error) => {
-    if (error.response?.status === 401) {
+    // Chỉ xử lý 401 khi không phải là request login
+    if (error.response?.status === 401 && !error.config.url.includes('login')) {
       localStorage.removeItem("userInfo");
       window.location.href = "/login";
     }
@@ -52,21 +53,22 @@ axiosClient.interceptors.response.use(
   }
 );
 
-export const handleDangNhap = (newToken) => {
-  let userInfo = localStorage.getItem("userInfo");
-  if (userInfo) {
-    try {
-      const parsedUserInfo = JSON.parse(userInfo);
-      parsedUserInfo.token = newToken?.token;
-      localStorage.setItem("userInfo", JSON.stringify(parsedUserInfo));
-      const token = newToken?.token;
-      if (token) {
-        axiosClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      }
-    } catch (error) {
-      console.error("Error parsing userInfo in handleDangNhap:", error);
-      localStorage.removeItem("userInfo"); // Xóa userInfo không hợp lệ
-    }
+export const handleDangNhap = (data) => {
+  // data có thể là { user, token } hoặc { doctor, token }
+  const token = data?.token;
+  const userData = data?.user || data?.doctor;
+  
+  if (token && userData) {
+    // Cập nhật axios headers và localStorage
+    axiosClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    
+    // Đảm bảo localStorage được cập nhật
+    const userInfo = {
+      ...userData,
+      token: token,
+      role: data?.user ? "user" : "doctor"
+    };
+    localStorage.setItem("userInfo", JSON.stringify(userInfo));
   }
 };
 

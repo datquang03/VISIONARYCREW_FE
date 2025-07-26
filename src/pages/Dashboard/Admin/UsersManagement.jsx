@@ -127,6 +127,7 @@ const UsersManagement = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [selectedUser, setSelectedUser] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const swiperRef = useRef(null);
 
   const tabList = [
     { key: "all", label: "Tất cả", icon: <FaUsers /> },
@@ -137,12 +138,6 @@ const UsersManagement = () => {
   useEffect(() => {
     dispatch(getAllUsers());
   }, [dispatch]);
-
-  useEffect(() => {
-    if (wrapperRef.current) {
-      gsap.fromTo(wrapperRef.current, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6 });
-    }
-  }, []);
 
   useEffect(() => {
     const handleEsc = (e) => {
@@ -168,6 +163,13 @@ const UsersManagement = () => {
     setSelectedUser(null);
   };
 
+  const handleTabChange = (key) => {
+    setActiveTab(key);
+    setTimeout(() => {
+      if (swiperRef.current) swiperRef.current.slideTo(0, 0);
+    }, 0);
+  };
+
   return (
     <div ref={wrapperRef}>
       {/* Header */}
@@ -180,7 +182,7 @@ const UsersManagement = () => {
         {tabList.map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => handleTabChange(tab.key)}
             className={`flex items-center gap-2 px-4 py-2 rounded-t-lg transition-all duration-300 text-sm font-medium whitespace-nowrap
               ${activeTab === tab.key
                 ? "bg-white shadow text-blue-600 border-b-2 border-blue-500"
@@ -198,27 +200,11 @@ const UsersManagement = () => {
           Không có người dùng nào trong mục này.
         </p>
       ) : (
-        <Swiper
-          spaceBetween={20}
-          slidesPerView={1}
-          breakpoints={{
-            640: { slidesPerView: 1, spaceBetween: 20 },
-            768: { slidesPerView: 2, spaceBetween: 20 },
-            1024: { slidesPerView: 3, spaceBetween: 20 },
-          }}
-          navigation
-          pagination={{ clickable: true }}
-          modules={[Navigation, Pagination]}
-          className="mt-6 swiper-container"
-        >
+        <div className="mt-6 grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {filteredUsers.map((user) => (
-            <SwiperSlide key={user._id}>
-              <div className="flex justify-center">
-                <UserCard user={user} onViewDetails={handleViewDetails} />
-              </div>
-            </SwiperSlide>
+            <UserCard key={user._id} user={user} onViewDetails={handleViewDetails} />
           ))}
-        </Swiper>
+        </div>
       )}
 
       {!isLoading && filteredUsers.length > 0 && (

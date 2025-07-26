@@ -8,6 +8,9 @@ import adminSlice from "./APIs/slices/adminSlice";
 import userSlice from "./APIs/slices/userProfileSlice";
 import paymentSlice from "./APIs/slices/paymentSlice";
 import doctorProfileSlice from "./APIs/slices/doctorProfileSlice";
+import globalReducer from './APIs/slices/globalSlice';
+import scheduleReducer from "./APIs/slices/scheduleSlice";
+import notificationReducer from './APIs/slices/notificationSlice';
 const store = configureStore({
   reducer: {
     authSlice: authSlice.reducer,
@@ -18,7 +21,10 @@ const store = configureStore({
     adminSlice: adminSlice.reducer,
     userProfileSlice: userSlice.reducer,
     doctorProfile: doctorProfileSlice.reducer,
-    paymentSlice: paymentSlice.reducer, 
+    paymentSlice: paymentSlice.reducer,
+    global: globalReducer,
+    scheduleSlice: scheduleReducer,
+    notification: notificationReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

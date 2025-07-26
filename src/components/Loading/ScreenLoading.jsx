@@ -26,7 +26,7 @@ const floatingIcons = generateFloatingIcons();
 
 const ScreenLoading = ({ text }) => {
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex flex-col items-center justify-center text-white overflow-hidden">
+    <div className="fixed inset-0 z-[9999] bg-black bg-opacity-90 flex flex-col items-center justify-center text-white overflow-hidden">
       {/* Spinner */}
       <motion.div
         className="w-20 h-20 border-4 border-blue-500 border-t-transparent rounded-full mb-6 z-20"

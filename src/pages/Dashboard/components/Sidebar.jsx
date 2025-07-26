@@ -64,8 +64,8 @@ const Sidebar = ({ role }) => {
     if (sidebarRef.current) {
       gsap.to(sidebarRef.current, {
         width: isCollapsed ? 64 : 256,
-        duration: 0.3,
-        ease: 'power3.inOut',
+        duration: 0.5,
+        ease: 'power2.inOut',
       });
     }
 
@@ -104,6 +104,22 @@ const Sidebar = ({ role }) => {
     }
   };
 
+  // Thêm useEffect để tự động thu gọn sidebar trên màn hình nhỏ:
+  useEffect(() => {
+    if (typeof toggleSidebar === 'function') {
+      if (window.innerWidth < 768 && !isCollapsed) {
+        toggleSidebar();
+      }
+      if (window.innerWidth >= 768 && isCollapsed) {
+        toggleSidebar();
+      }
+    }
+    // Không cần addEventListener resize nữa!
+    // Chỉ chạy 1 lần khi mount để set trạng thái ban đầu
+    // Người dùng bấm icon menu sẽ tự do toggle
+    // eslint-disable-next-line
+  }, []);
+
   return (
     <div
       ref={sidebarRef}
@@ -120,8 +136,11 @@ const Sidebar = ({ role }) => {
         </h2>
         <button
           onClick={toggleSidebar}
-          className="text-white hover:text-gray-300 focus:outline-none"
+          className="text-white hover:text-gray-300 focus:outline-none cursor-pointer"
           title={isCollapsed ? 'Mở rộng' : 'Thu gọn'}
+          style={{ transition: 'transform 0.2s' }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.15)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
         >
           <FaBars className="text-xl" />
         </button>
@@ -133,7 +152,7 @@ const Sidebar = ({ role }) => {
             to={link.path}
             end={link.exact || false}
             className={({ isActive }) =>
-              `flex items-center w-full py-3 px-4 ${
+              `flex items-center w-full py-3 px-4 gap-3 ${
                 isActive ? 'bg-blue-500 text-white' : 'text-gray-200 hover:bg-gray-700'
               } ${isCollapsed ? 'justify-center' : 'justify-start'} transition-colors duration-200`
             }
@@ -142,7 +161,10 @@ const Sidebar = ({ role }) => {
             ref={(el) => (linksRef.current[index] = el)}
             title={isCollapsed ? link.label : ''}
           >
-            <span className="nav-icon text-lg">{link.icon}</span>
+            <span className="nav-icon text-lg flex-shrink-0 w-6 h-6 flex items-center justify-center transition-transform duration-200" style={{ transition: 'transform 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.15)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+            >{link.icon}</span>
             <span className={`nav-label ${isCollapsed ? 'hidden' : 'ml-3'}`}>{link.label}</span>
           </NavLink>
         ))}

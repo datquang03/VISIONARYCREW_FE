@@ -6,7 +6,7 @@ export const getDoctors = createAsyncThunk(
   "doctorSlice/getDoctors",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await getRequest("users/doctors");
+      const response = await getRequest("doctors");
       return response;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Error fetching doctors");

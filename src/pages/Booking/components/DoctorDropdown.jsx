@@ -10,7 +10,7 @@ const DoctorDropdown = ({ doctors, selectedDoctor, showDropdown, setShowDropdown
         onClick={() => setShowDropdown(!showDropdown)}
         className="w-full bg-white text-black font-medium py-2 px-4 rounded shadow-md border border-gray-300 flex items-center justify-between hover:border-blue-400 transition-all duration-300 cursor-pointer"
       >
-        {selectedDoctor ? `${selectedDoctor.name} - ${selectedDoctor.specialty}` : 'Chọn bác sĩ'}
+        {selectedDoctor ? `Bác sĩ: ${selectedDoctor.fullName || selectedDoctor.name || 'Không rõ tên'}` : 'Chọn bác sĩ'}
         <FaChevronDown />
       </button>
       {showDropdown && (
@@ -20,13 +20,16 @@ const DoctorDropdown = ({ doctors, selectedDoctor, showDropdown, setShowDropdown
           exit={{ opacity: 0, y: -10 }}
           className="absolute top-full left-0 w-full mt-1 bg-white text-black rounded shadow-md border border-gray-200 max-h-60 overflow-y-auto scroll-bar-hidden"
         >
-          {doctors.map((doc) => (
+          {doctors.length === 0 && (
+            <li className="px-4 py-2 text-gray-400">Không có bác sĩ nào</li>
+          )}
+          {doctors.map((doc, idx) => (
             <li
-              key={doc.id}
-              onClick={() => onSelectDoctor(doc)}
-              className="px-4 py-2 hover:bg-blue-100 cursor-pointer border-b border-gray-100 "
+              key={doc?._id || idx}
+              onClick={() => doc && typeof doc === 'object' && doc._id && onSelectDoctor(doc)}
+              className="px-4 py-2 hover:bg-blue-100 cursor-pointer border-b border-gray-100 text-base font-medium"
             >
-              {`${doc.name} - ${doc.specialty}`}
+              {doc && typeof doc === 'object' ? `Bác sĩ: ${doc.fullName || doc.name || 'Không rõ tên'}` : JSON.stringify(doc)}
             </li>
           ))}
         </motion.ul>

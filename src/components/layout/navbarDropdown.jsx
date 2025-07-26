@@ -66,7 +66,7 @@ const NavbarDropdown = ({ onClose }) => {
     doctor: [
       {
         label: "Dashboard",
-        to: "/doctor/dashboard",
+        to: "/doctor",
         icon: <FaTachometerAlt />,
       },
       {

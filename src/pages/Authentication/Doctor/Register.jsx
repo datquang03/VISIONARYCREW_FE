@@ -10,6 +10,7 @@ import { doctorTypeOptions } from '../../../components/data/DoctorTypeData';
 import { doctorJobOptions } from '../../../components/data/DoctorJobData';
 import { hospitalSchoolOptions } from '../../../components/data/HospitalSchoolData';
 import { hospitalOptions } from '../../../components/data/HospitalData';
+import ShortLoading from "../../../components/Loading/ShortLoading";
 
 const DoctorRegister = () => {
   const dispatch = useDispatch();
@@ -396,7 +397,7 @@ const DoctorRegister = () => {
           <button type="button" className="text-blue-600 font-semibold mt-1" onClick={handleAddWorkExp}>+ Thêm kinh nghiệm</button>
         </div>
         <button type="submit" className="w-full py-2 rounded-xl font-semibold shadow-md bg-blue-600 text-white hover:bg-blue-700 transition text-base md:text-lg" disabled={isLoading}>
-          {isLoading ? "Đang đăng ký..." : "Đăng ký"}
+          {isLoading ? <ShortLoading text={"Đang đăng ký..."} /> : "Đăng ký"}
         </button>
       </form>
     </div>

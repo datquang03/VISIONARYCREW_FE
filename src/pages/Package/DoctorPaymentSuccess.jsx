@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { checkPackagePaymentStatus } from '../../redux/APIs/slices/paymentSlice';
-import { motion } from 'framer-motion';
 import gsap from 'gsap';
 
 const DoctorPaymentSuccess = () => {
@@ -46,7 +45,7 @@ const DoctorPaymentSuccess = () => {
       {/* Particles */}
       <div className="absolute inset-0 pointer-events-none z-0">
         {[...Array(30)].map((_, i) => (
-          <motion.div
+          <div
             key={i}
             className="absolute rounded-full bg-white/30 shadow-lg"
             style={{
@@ -70,24 +69,18 @@ const DoctorPaymentSuccess = () => {
         ))}
       </div>
       {/* Card */}
-      <motion.div
+      <div
         className="relative z-10 bg-white/90 backdrop-blur-xl p-10 rounded-3xl shadow-2xl border-4 border-white/60 flex flex-col items-center w-full max-w-lg"
         initial={{ scale: 0.7, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 120, damping: 12 }}
         whileHover={{ scale: 1.03, boxShadow: '0 8px 40px 0 #fcb69f55' }}
       >
-        <motion.h1
-          className="text-3xl font-extrabold mb-4 bg-gradient-to-r from-green-400 via-pink-500 to-orange-400 bg-clip-text text-transparent drop-shadow-lg"
-          animate={{ scale: [1, 1.08, 1], textShadow: [
-            '0 0 0px #fff',
-            '0 0 16px #fcb69f, 0 0 8px #a8edea',
-            '0 0 0px #fff',
-          ] }}
-          transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
+        <h1
+          className="text-3xl font-extrabold mb-4 bg-gradient-to-r from-green-400 via-pink-500 to-orange-400 bg-clip-text text-transparent drop-shadow-lg font-sans"
         >
           {status === 'PAID' && code === '00' ? '🎉 Thanh toán thành công!' : '❌ Thanh toán thất bại'}
-        </motion.h1>
+        </h1>
         {isLoading && <motion.p className="text-lg text-gray-600 mb-4" animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 1.5, repeat: Infinity }}>Đang kiểm tra trạng thái thanh toán...</motion.p>}
         {payment && (
           <motion.div
@@ -121,7 +114,7 @@ const DoctorPaymentSuccess = () => {
         >
           Về trang Dashboard
         </motion.a>
-      </motion.div>
+      </div>
       {/* Extra glow effect */}
       <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-pink-200 rounded-full opacity-30 blur-3xl z-0 animate-pulse" />
       <div className="absolute -bottom-32 right-1/2 translate-x-1/2 w-[500px] h-[500px] bg-orange-200 rounded-full opacity-20 blur-3xl z-0 animate-pulse" />

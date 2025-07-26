@@ -76,17 +76,23 @@ const DoctorRegisterTab = () => {
     setRejectionMessage('');
   };
 
-  const handleApprove = (doctorId) => {
-    dispatch(handleDoctorApplication({ doctorId, status: 'accepted' }));
+  const handleApprove = async (doctorId) => {
+    const res = await dispatch(handleDoctorApplication({ doctorId, status: 'accepted' }));
     setShowModal(false);
+    if (res.meta && res.meta.requestStatus === 'fulfilled') {
+      dispatch(getPendingDoctors());
+    }
   };
 
-  const handleReject = (doctorId) => {
+  const handleReject = async (doctorId) => {
     if (rejectionMessage.trim()) {
-      dispatch(handleDoctorApplication({ doctorId, status: 'rejected', rejectionMessage }));
+      const res = await dispatch(handleDoctorApplication({ doctorId, status: 'rejected', rejectionMessage }));
       setShowModal(false);
       setShowRejectionModal(false);
       setRejectionMessage('');
+      if (res.meta && res.meta.requestStatus === 'fulfilled') {
+        dispatch(getPendingDoctors());
+      }
     } else {
       CustomToast({ message: 'Vui lòng nhập lý do từ chối', type: 'error' });
     }
@@ -94,13 +100,12 @@ const DoctorRegisterTab = () => {
 
   return (
     <div ref={contentRef}>
+      {isLoading && <ShortLoading text="Đang lấy danh sách bác sĩ đăng kí" />}
       {/* Header */}
       <div className="flex items-center mb-6">
         <FaUserMd className="text-3xl text-blue-500 mr-3" />
         <h2 className="text-3xl font-bold text-gray-900">Quản lý đăng ký bác sĩ</h2>
       </div>
-
-      {isLoading && <ShortLoading text="Đang lấy danh sách bác sĩ đăng kí" />}
 
       {isSuccess && pendingDoctors.length === 0 && (
         <div ref={noDoctorsRef} className="text-center mt-6">
@@ -185,6 +190,36 @@ const DoctorRegisterTab = () => {
                   </div>
                 ) : (
                   <p className="italic">Không có chứng chỉ</p>
+                )}
+              </div>
+              <p><strong>Trạng thái:</strong> {selectedDoctor.status === 'accepted' ? 'Đã chấp nhận' : selectedDoctor.status === 'pending' ? 'Chờ duyệt' : 'Từ chối'}</p>
+              <p><strong>Ngày nộp đơn:</strong> {selectedDoctor.submittedAt || (selectedDoctor.createdAt ? new Date(selectedDoctor.createdAt).toLocaleDateString() : 'Chưa cập nhật')}</p>
+              <p><strong>Ngày cập nhật:</strong> {selectedDoctor.updatedAt || (selectedDoctor.updatedAt ? new Date(selectedDoctor.updatedAt).toLocaleDateString() : 'Chưa cập nhật')}</p>
+              <p><strong>Công việc gần đây:</strong> {selectedDoctor.recentJob || 'Chưa cập nhật'}</p>
+              <p><strong>Mô tả:</strong> {selectedDoctor.description || 'Chưa cập nhật'}</p>
+              {selectedDoctor.rejectionMessage && <p><strong>Tin nhắn từ chối:</strong> {selectedDoctor.rejectionMessage}</p>}
+              <div>
+                <strong>Học vấn:</strong>
+                {Array.isArray(selectedDoctor.education) && selectedDoctor.education.length > 0 ? (
+                  <ul className="list-disc pl-5 mb-2">
+                    {selectedDoctor.education.map(e => (
+                      <li key={e._id}>{e.institution} - {e.degree} ({e.year})</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <span className="text-gray-400">Chưa cập nhật</span>
+                )}
+              </div>
+              <div>
+                <strong>Kinh nghiệm làm việc:</strong>
+                {Array.isArray(selectedDoctor.workExperience) && selectedDoctor.workExperience.length > 0 ? (
+                  <ul className="list-disc pl-5 mb-2">
+                    {selectedDoctor.workExperience.map(w => (
+                      <li key={w._id}>{w.workplace} - {w.position} ({w.startYear} - {w.endYear})</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <span className="text-gray-400">Chưa cập nhật</span>
                 )}
               </div>
             </div>

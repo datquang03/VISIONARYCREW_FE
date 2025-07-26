@@ -1,38 +1,33 @@
 // HealthcareBookingSystem.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaChevronDown } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import gsap from 'gsap';
 import DefaultLayout from '../../components/layout/defaulLayout';
 import DoctorDropdown from './components/DoctorDropdown';
 import WeekNavigation from './components/WeekNavigation';
 import ScheduleTable from './components/ScheduleTable';
+import { useDispatch, useSelector } from 'react-redux';
+import { getDoctors } from '../../redux/APIs/slices/doctorSlice';
+import { getDoctorSchedules, registerSchedule, cancelRegisteredSchedule } from '../../redux/APIs/slices/scheduleSlice';
+import { ConfirmModal } from '../../components/modal/ConfirmModal';
+import { CustomToast } from '../../components/Toast/CustomToast';
+import UserScheduleDetailModal from '../../components/modal/UserScheduleDetailModal';
+import { addNotification } from '../../redux/APIs/slices/notificationSlice';
 
 const HealthcareBookingSystem = () => {
-  const navigate = useNavigate();
-  const today = new Date();
-
-  const [currentUser] = useState({
-    id: 1,
-    name: 'Nguyễn Văn A',
-    role: 'user',
-    email: 'nguyenvana@email.com',
-    avatar: null
-  });
+  // const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { doctors: doctorList } = useSelector(state => state.doctorSlice);
+  // Chỉ lấy đúng mảng object bác sĩ (doctorList[1])
+  const doctors = Array.isArray(doctorList?.doctors) ? doctorList.doctors : [];
+  const { doctorSchedules = [] } = useSelector(state => state.scheduleSlice);
+  const currentUser = useSelector(state => state.authSlice.user);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [showDoctorDropdown, setShowDoctorDropdown] = useState(false);
   const [appointments, setAppointments] = useState([]);
   const [availableSlots, setAvailableSlots] = useState([]);
-
-  const doctors = [
-    { id: 1, name: 'BS. Nguyễn Thị Lan', specialty: 'Nội khoa' },
-    { id: 2, name: 'BS. Trần Văn Hùng', specialty: 'Ngoại khoa' },
-    { id: 3, name: 'BS. Lê Minh Tuấn', specialty: 'Tim mạch' },
-    { id: 4, name: 'BS. Phạm Thị Hoa', specialty: 'Sản khoa' }
-  ];
+  const [slotDetail, setSlotDetail] = useState(null);
 
   const timeSlots = [
     '09AM - 10AM', '10AM - 11AM', '11AM - 12PM', '12PM - 01PM',
@@ -104,10 +99,49 @@ const HealthcareBookingSystem = () => {
     }
   };
 
-  const getSlotStatus = (doctorId, date, time) => {
-    if (isSlotBooked(doctorId, date, time)) return 'booked';
-    if (isSlotAvailable(doctorId, date, time)) return 'available';
-    return 'empty';
+  const handleSlotDetail = (slot) => {
+    setSlotDetail(slot);
+  };
+
+  const handleRegister = async (scheduleId) => {
+    try {
+      await dispatch(registerSchedule(scheduleId)).unwrap();
+      CustomToast({ message: 'Đăng ký lịch thành công!', type: 'success' });
+      dispatch(addNotification({
+        type: 'booking',
+        message: 'Bạn đã đặt lịch thành công!',
+        time: new Date().toLocaleString('vi-VN'),
+        scheduleId
+      }));
+      if (selectedDoctor && selectedDoctor._id) {
+        dispatch(getDoctorSchedules({ doctorId: selectedDoctor._id }));
+      }
+      setSlotDetail(null);
+    } catch (err) {
+      CustomToast({ message: err?.message || 'Đăng ký lịch thất bại!', type: 'error' });
+    }
+  };
+
+  const handleCancelBooking = async (scheduleId, cancelReason) => {
+    try {
+      await dispatch(
+        cancelRegisteredSchedule({ scheduleId, cancelReason })
+      ).unwrap();
+      CustomToast({ message: 'Huỷ lịch thành công!', type: 'success' });
+      dispatch(addNotification({
+        type: 'cancel',
+        message: 'Bạn đã huỷ một lịch hẹn!',
+        time: new Date().toLocaleString('vi-VN'),
+        scheduleId,
+        cancelReason
+      }));
+      if (selectedDoctor && selectedDoctor._id) {
+        dispatch(getDoctorSchedules({ doctorId: selectedDoctor._id }));
+      }
+      setSlotDetail(null);
+    } catch (err) {
+      CustomToast({ message: err?.message || 'Huỷ lịch thất bại!', type: 'error' });
+    }
   };
 
   const navigateWeek = (direction) => {
@@ -119,11 +153,28 @@ const HealthcareBookingSystem = () => {
   const handleSelectDoctor = (doctor) => {
     setSelectedDoctor(doctor);
     setShowDoctorDropdown(false);
+    if (doctor && doctor._id) {
+      dispatch(getDoctorSchedules({ doctorId: doctor._id }));
+    }
   };
 
-  const displayDoctors = currentUser.role === 'doctor'
-    ? doctors.filter(doc => doc.id === currentUser.id)
-    : selectedDoctor ? [selectedDoctor] : doctors;
+  // Hàm kiểm tra slot quá khứ (check cả giờ)
+  const isPastSlot = (date, time) => {
+    const now = new Date();
+    const slotDate = new Date(date);
+    const [, end] = time.split(' - ');
+    let [endHour, endMin] = end.replace('AM', '').replace('PM', '').trim().split(':');
+    if (!endMin) endMin = '00';
+    endHour = parseInt(endHour);
+    endMin = parseInt(endMin);
+    if (end.includes('PM') && endHour < 12) endHour += 12;
+    slotDate.setHours(endHour, endMin, 0, 0);
+    return slotDate < now;
+  };
+
+  useEffect(() => {
+    dispatch(getDoctors());
+  }, [dispatch]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -135,18 +186,9 @@ const HealthcareBookingSystem = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showDoctorDropdown]);
 
-  useEffect(() => {
-    gsap.from('.week-fade', {
-      opacity: 0,
-      y: 20,
-      duration: 0.5,
-      ease: 'power2.out'
-    });
-  }, [selectedDate]);
-
   return (
     <DefaultLayout>
-      <div className="p-6 md:p-10 min-h-screen text-black scroll-bar-hidden overflow-x-auto">
+      <div className="week-fade p-6 md:p-10 min-h-screen text-black scroll-bar-hidden overflow-x-auto">
         <DoctorDropdown
           doctors={doctors}
           selectedDoctor={selectedDoctor}
@@ -160,15 +202,63 @@ const HealthcareBookingSystem = () => {
           navigateWeek={navigateWeek}
         />
 
+        {selectedDoctor && (
+          <div className="font-bold text-lg mb-2 mt-6 border border-green-400 bg-green-50 rounded-lg px-4 py-2 inline-block shadow">
+            Lịch của bác sĩ {selectedDoctor.fullName || selectedDoctor.name || selectedDoctor.username}
+          </div>
+        )}
+
         <ScheduleTable
-          currentUser={currentUser}
+          currentUser={currentUser || {}}
           selectedDoctor={selectedDoctor}
           selectedDate={selectedDate}
           timeSlots={timeSlots}
           getDaysOfWeek={getDaysOfWeek}
-          getSlotStatus={getSlotStatus}
+          getSlotStatus={(doctorId, date, time) => {
+            if (Array.isArray(doctorSchedules)) {
+              const dateStr = formatDate(date);
+              const [start, end] = time.split(' - ');
+              const parseTime = (t) => {
+                let [h, m] = t.replace('AM', '').replace('PM', '').trim().split(':');
+                if (!m) m = '00';
+                h = h.padStart(2, '0');
+                return `${h}:${m}`;
+              };
+              const startTime = parseTime(start);
+              const endTime = parseTime(end);
+              const found = doctorSchedules.find(slot =>
+                slot.date?.slice(0, 10) === dateStr &&
+                slot.timeSlot?.startTime === startTime &&
+                slot.timeSlot?.endTime === endTime
+              );
+              if (found) {
+                if (found.patient) {
+                  if (String(found.patient) === String(currentUser?.id)) {
+                    return 'booked-by-user';
+                  } else {
+                    return 'booked-by-other';
+                  }
+                } else {
+                  return 'doctor-free';
+                }
+              }
+            }
+            return 'empty';
+          }}
+          isPastSlot={isPastSlot}
           handleSlotClick={handleSlotClick}
+          onSlotDetail={handleSlotDetail}
+          doctorSchedules={doctorSchedules}
         />
+        {slotDetail && (
+          <UserScheduleDetailModal
+            slot={slotDetail}
+            onClose={() => setSlotDetail(null)}
+            onRegister={handleRegister}
+            onCancelBooking={handleCancelBooking}
+            currentUser={currentUser || {}}
+          />
+        )}
       </div>
     </DefaultLayout>
   );

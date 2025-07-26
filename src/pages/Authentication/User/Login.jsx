@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import CustomButton from '../../../components/buttons/CustomButton';
 import { useDispatch, useSelector } from 'react-redux';
-import { login, setNull } from '../../../redux/APIs/slices/authSlice';
+import { login, resetForm } from '../../../redux/APIs/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { CustomToast } from '../../../components/Toast/CustomToast';
 import { motion } from "framer-motion";
+
 const UserLogin = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -24,10 +25,12 @@ const UserLogin = () => {
       dispatch(login(formData));
     }
   };
+
   useEffect(() => {
     if (isError) {
       CustomToast({ message, type: "error" });
-      setTimeout(() => dispatch(setNull()), 2000);
+      // Không reset form ngay lập tức, để user có thể thử lại
+      // setTimeout(() => dispatch(resetForm()), 2000);
     }
     if (isSuccess) {
       CustomToast({ message, type: "success" });
@@ -35,18 +38,20 @@ const UserLogin = () => {
         username: "",
         password: "",
       });
-      setTimeout(() => {
-        dispatch(setNull());
-        navigate("/");
-      }, 2000);
+      // Chuyển hướng ngay lập tức sau khi login thành công
+      navigate("/", { replace: true });
+      // Không reset state để giữ thông tin user
     }
   }, [isSuccess, isError, dispatch, navigate]);
 
-  useEffect(() => {
-    return () => {
-      dispatch(setNull());
-    };
-  }, [dispatch]);
+  // Không reset state khi component unmount để giữ thông tin đăng nhập
+  // useEffect(() => {
+  //   return () => {
+  //     if (!isSuccess) {
+  //       dispatch(resetForm());
+  //     }
+  //   };
+  // }, [dispatch, isSuccess]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-200 to-cyan-300 px-4 relative">
