@@ -228,7 +228,7 @@ const HealthcareBookingSystem = () => {
 
         {selectedDoctor && (
           <div className="font-bold text-lg mb-2 mt-6 border border-green-400 bg-green-50 rounded-lg px-4 py-2 inline-block shadow">
-            Lịch của bác sĩ {selectedDoctor.fullName || selectedDoctor.name || selectedDoctor.username}
+            Lịch của bác sĩ {selectedDoctor.fullName || selectedDoctor.name || selectedDoctor.username}
           </div>
         )}
 
