@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useRef } from 'react';
 import { SidebarContext } from './SidebarContext';
 import { NavLink } from 'react-router-dom';
-import { FaBars, FaTachometerAlt, FaUserMd, FaBox, FaUsers, FaClipboardList, FaWpforms, FaHistory, FaHome } from 'react-icons/fa';
+import { FaBars, FaTachometerAlt, FaUserMd, FaUsers, FaClipboardList, FaWpforms, FaHistory, FaHome } from 'react-icons/fa';
 import { gsap } from 'gsap';
+import { MdOutlinePendingActions } from 'react-icons/md';
 
 const Sidebar = ({ role }) => {
   const { isCollapsed, toggleSidebar } = useContext(SidebarContext);
@@ -14,9 +15,9 @@ const Sidebar = ({ role }) => {
   const doctorLinks = [
     { path: '/doctor/dashboard', label: 'Bảng điều khiển', icon: <FaTachometerAlt /> },
     { path: '/doctor/register', label: 'Đăng ký bác sĩ', icon: <FaUserMd /> },
-    { path: '/doctor/packages', label: 'Gói dịch vụ', icon: <FaBox /> },
     { path: '/doctor/form', label: 'Đơn đăng kí của bạn', icon: <FaWpforms /> },
     { path: '/doctor/payment/history', label: 'Lịch sử thanh toán', icon: <FaHistory /> },
+    { path: '/doctor/pending', label: 'Yêu cầu đăng kí', icon: <MdOutlinePendingActions /> },
     { path: '/', label: 'Về trang chủ', icon: <FaHome /> },
   ];
   

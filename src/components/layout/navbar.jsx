@@ -7,7 +7,7 @@ import { getUserProfile } from "../../redux/APIs/slices/authSlice";
 import { getDoctorProfile } from "../../redux/APIs/slices/doctorProfileSlice";
 import NavbarDropdown from "./navbarDropdown";
 import { FaBell, FaTimes, FaEye } from "react-icons/fa";
-import { fetchNotifications, markNotificationRead, deleteNotification, deleteAllNotification, createNotification } from '../../redux/APIs/slices/notificationSlice';
+import { fetchNotifications, markNotificationRead, deleteNotification, deleteAllNotification } from '../../redux/APIs/slices/notificationSlice';
 import { socket } from '../../utils/socket';
 import ShortLoading from '../Loading/ShortLoading';
 
@@ -42,7 +42,9 @@ const Navbar = () => {
       socket.emit("join", userInfo.id);
       
       listenerRef.current = (newNotification) => {
-        dispatch(createNotification(newNotification));
+        // Không gọi API createNotification vì notification đã được tạo ở backend
+        // Chỉ cần fetch lại notifications để có data đầy đủ
+        dispatch(fetchNotifications());
       };
       
       socket.on("notification", listenerRef.current);

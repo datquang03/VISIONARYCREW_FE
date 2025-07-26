@@ -11,7 +11,6 @@ import { getDoctorSchedules, registerSchedule, cancelRegisteredSchedule } from '
 import { ConfirmModal } from '../../components/modal/ConfirmModal';
 import { CustomToast } from '../../components/Toast/CustomToast';
 import UserScheduleDetailModal from '../../components/modal/UserScheduleDetailModal';
-import { createNotification } from '../../redux/APIs/slices/notificationSlice';
 
 const HealthcareBookingSystem = () => {
   // const navigate = useNavigate();
@@ -131,12 +130,7 @@ const HealthcareBookingSystem = () => {
     try {
       await dispatch(registerSchedule(scheduleId)).unwrap();
       CustomToast({ message: 'Đăng ký lịch thành công!', type: 'success' });
-      dispatch(createNotification({
-        type: 'booking',
-        message: 'Bạn đã đặt lịch thành công!',
-        time: new Date().toLocaleString('vi-VN'),
-        scheduleId
-      }));
+      // Notification đã được tạo ở backend, không cần tạo thêm ở frontend
       if (selectedDoctor && selectedDoctor._id) {
         dispatch(getDoctorSchedules({ doctorId: selectedDoctor._id }));
       }
@@ -152,13 +146,7 @@ const HealthcareBookingSystem = () => {
         cancelRegisteredSchedule({ scheduleId, cancelReason })
       ).unwrap();
       CustomToast({ message: 'Huỷ lịch thành công!', type: 'success' });
-      dispatch(createNotification({
-        type: 'cancel',
-        message: 'Bạn đã huỷ một lịch hẹn!',
-        time: new Date().toLocaleString('vi-VN'),
-        scheduleId,
-        cancelReason
-      }));
+      // Notification đã được tạo ở backend, không cần tạo thêm ở frontend
       if (selectedDoctor && selectedDoctor._id) {
         dispatch(getDoctorSchedules({ doctorId: selectedDoctor._id }));
       }

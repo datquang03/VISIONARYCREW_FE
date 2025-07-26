@@ -110,6 +110,33 @@ export const rejectRegisterSchedule = createAsyncThunk('schedules/rejectRegister
   }
 });
 
+export const acceptRegisterSchedule = createAsyncThunk('schedules/acceptRegister', async (scheduleId, { rejectWithValue }) => {
+  try {
+    const { data } = await axios.post(`/schedules/accept/${scheduleId}`);
+    return data;
+  } catch (err) {
+    return rejectWithValue(err.response?.data || err.message);
+  }
+});
+
+export const cancelPendingSchedule = createAsyncThunk('schedules/cancelPending', async (scheduleId, { rejectWithValue }) => {
+  try {
+    const { data } = await axios.post(`/schedules/cancel-pending/${scheduleId}`);
+    return data;
+  } catch (err) {
+    return rejectWithValue(err.response?.data || err.message);
+  }
+});
+
+export const getPendingSchedules = createAsyncThunk('schedules/getPending', async (params, { rejectWithValue }) => {
+  try {
+    const { data } = await axios.get('/schedules/pending', { params });
+    return data;
+  } catch (err) {
+    return rejectWithValue(err.response?.data || err.message);
+  }
+});
+
 // Slice
 const scheduleSlice = createSlice({
   name: 'schedule',
@@ -119,6 +146,8 @@ const scheduleSlice = createSlice({
     doctorSchedules: [],
     mySchedules: [],
     myRegisteredSchedules: [],
+    pendingSchedules: [],
+    totalSchedules: 0, // Thêm field total
     pagination: null,
     loading: false,
     error: null,
@@ -127,11 +156,14 @@ const scheduleSlice = createSlice({
     // Individual loading states
     registerLoading: false,
     cancelLoading: false,
+    cancelPendingLoading: false,
     createLoading: false,
     updateLoading: false,
     deleteLoading: false,
     rejectLoading: false,
+    acceptLoading: false,
     makeAvailableLoading: false,
+    getPendingLoading: false,
   },
   reducers: {
     clearScheduleState: (state) => {
@@ -182,6 +214,7 @@ const scheduleSlice = createSlice({
     builder.addCase(getMySchedules.fulfilled, (state, action) => {
       state.loading = false;
       state.mySchedules = action.payload.schedules;
+      state.totalSchedules = action.payload.total || 0; // Thêm total
     });
     builder.addCase(getMySchedules.rejected, (state, action) => {
       state.loading = false; state.error = action.payload;
@@ -267,8 +300,65 @@ const scheduleSlice = createSlice({
     builder.addCase(rejectRegisterSchedule.rejected, (state, action) => {
       state.rejectLoading = false; state.error = action.payload;
     });
+    // acceptRegisterSchedule
+    builder.addCase(acceptRegisterSchedule.pending, (state) => {
+      state.acceptLoading = true; state.error = null; state.success = null;
+    });
+    builder.addCase(acceptRegisterSchedule.fulfilled, (state, action) => {
+      state.acceptLoading = false; state.success = action.payload.message; state.currentSchedule = action.payload.schedule;
+    });
+    builder.addCase(acceptRegisterSchedule.rejected, (state, action) => {
+      state.acceptLoading = false; state.error = action.payload;
+    });
+    // cancelPendingSchedule
+    builder.addCase(cancelPendingSchedule.pending, (state) => {
+      state.cancelPendingLoading = true; state.error = null; state.success = null;
+    });
+    builder.addCase(cancelPendingSchedule.fulfilled, (state, action) => {
+      state.cancelPendingLoading = false; state.success = action.payload.message; state.currentSchedule = action.payload.schedule;
+    });
+    builder.addCase(cancelPendingSchedule.rejected, (state, action) => {
+      state.cancelPendingLoading = false; state.error = action.payload;
+    });
+    // getPendingSchedules
+    builder.addCase(getPendingSchedules.pending, (state) => {
+      state.getPendingLoading = true; state.error = null;
+    });
+    builder.addCase(getPendingSchedules.fulfilled, (state, action) => {
+      state.getPendingLoading = false;
+      state.pendingSchedules = action.payload;
+    });
+    builder.addCase(getPendingSchedules.rejected, (state, action) => {
+      state.getPendingLoading = false; state.error = action.payload;
+    });
   },
 });
 
 export const { clearScheduleState } = scheduleSlice.actions;
+
+// Selectors
+export const selectAllSchedules = (state) => state.scheduleSlice?.allSchedules || [];
+export const selectAvailableSchedules = (state) => state.scheduleSlice?.availableSchedules || [];
+export const selectDoctorSchedules = (state) => state.scheduleSlice?.doctorSchedules || [];
+export const selectMySchedules = (state) => state.scheduleSlice?.mySchedules || [];
+export const selectMyRegisteredSchedules = (state) => state.scheduleSlice?.myRegisteredSchedules || [];
+export const selectPendingSchedules = (state) => state.scheduleSlice?.pendingSchedules || [];
+export const selectScheduleLoading = (state) => state.scheduleSlice?.loading || false;
+export const selectScheduleError = (state) => state.scheduleSlice?.error || null;
+export const selectScheduleSuccess = (state) => state.scheduleSlice?.success || null;
+export const selectCurrentSchedule = (state) => state.scheduleSlice?.currentSchedule || null;
+export const selectTotalSchedules = (state) => state.scheduleSlice?.totalSchedules || 0;
+
+// Loading selectors
+export const selectRegisterLoading = (state) => state.scheduleSlice?.registerLoading || false;
+export const selectCancelLoading = (state) => state.scheduleSlice?.cancelLoading || false;
+export const selectCancelPendingLoading = (state) => state.scheduleSlice?.cancelPendingLoading || false;
+export const selectCreateLoading = (state) => state.scheduleSlice?.createLoading || false;
+export const selectUpdateLoading = (state) => state.scheduleSlice?.updateLoading || false;
+export const selectDeleteLoading = (state) => state.scheduleSlice?.deleteLoading || false;
+export const selectRejectLoading = (state) => state.scheduleSlice?.rejectLoading || false;
+export const selectAcceptLoading = (state) => state.scheduleSlice?.acceptLoading || false;
+export const selectMakeAvailableLoading = (state) => state.scheduleSlice?.makeAvailableLoading || false;
+export const selectGetPendingLoading = (state) => state.scheduleSlice?.getPendingLoading || false;
+
 export default scheduleSlice.reducer; 

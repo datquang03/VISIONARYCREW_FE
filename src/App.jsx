@@ -25,7 +25,6 @@ import {
   AdminProtectedRouter,
   DoctorProtectedRouter,
   AdminAndUserProtectedRouter,
-  
 } from "./middlewares/Auth";
 // Xóa import các ProtectedRouter vì không dùng nữa
 import UserProfile from "./pages/Profile/User/UserProfile";
@@ -34,6 +33,7 @@ import DoctorProfile from "./pages/Profile/Doctor/DoctorProfile";
 import DoctorPaymentSuccess from "./pages/Package/DoctorPaymentSuccess";
 import DoctorPaymentHistory from "./pages/Dashboard/Doctor/DoctorPaymentHistory";
 import DoctorPaymentFail from "./pages/Package/DoctorPaymentFail";
+import DoctorPendingSchedule from "./pages/Dashboard/Doctor/DoctorPendingSchedule";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -70,7 +70,10 @@ const App = () => {
           <Route element={<AdminProtectedRouter />}>
             <Route path="/admin" element={<AdminDashboard />}>
               <Route index element={<div>Welcome to Admin Dashboard</div>} />
-              <Route path="dashboard" element={<div>Admin Dashboard Content</div>} />
+              <Route
+                path="dashboard"
+                element={<div>Admin Dashboard Content</div>}
+              />
               <Route path="doctors" element={<DoctorsPage />} />
               <Route path="users" element={<UsersManagement />} />
               <Route path="doctors/pending" element={<DoctorRegisterTab />} />
@@ -81,14 +84,24 @@ const App = () => {
           <Route element={<DoctorProtectedRouter />}>
             <Route path="/doctor" element={<DoctorDashboard />}>
               <Route path="dashboard" element={<DoctorDashboardContent />} />
-              <Route path="payment/history" element={<DoctorPaymentHistory />} />
+              <Route
+                path="payment/history"
+                element={<DoctorPaymentHistory />}
+              />
+              <Route path="pending" element={<DoctorPendingSchedule />} />
               <Route path="form" element={<DoctorRegisterForm />} />
             </Route>
             <Route path="/doctor/booking" element={<DoctorSchedule />} />
             <Route path="/doctor/packages" element={<DoctorPackages />} />
             <Route path="/doctor/profile" element={<DoctorProfile />} />
-            <Route path="/doctor/payment/success" element={<DoctorPaymentSuccess />} />
-            <Route path="/doctor/payment/cancelled" element={<DoctorPaymentFail />} />
+            <Route
+              path="/doctor/payment/success"
+              element={<DoctorPaymentSuccess />}
+            />
+            <Route
+              path="/doctor/payment/cancelled"
+              element={<DoctorPaymentFail />}
+            />
           </Route>
         </Routes>
       </SidebarProvider>
