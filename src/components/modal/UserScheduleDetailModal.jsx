@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { FaRegTimesCircle, FaRegCheckCircle } from 'react-icons/fa';
+import ShortLoading from '../Loading/ShortLoading';
 
-const UserScheduleDetailModal = ({ slot, onClose, onRegister, onCancelBooking, onRejectBooking }) => {
+const UserScheduleDetailModal = ({ slot, onClose, onRegister, onCancelBooking, onRejectBooking, registerLoading = false, cancelLoading = false, rejectLoading = false }) => {
   const [showCancel, setShowCancel] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   if (!slot) return null;
@@ -42,7 +43,8 @@ const UserScheduleDetailModal = ({ slot, onClose, onRegister, onCancelBooking, o
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold transition flex items-center gap-2"
+                disabled={registerLoading || cancelLoading || rejectLoading}
+                className="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FaRegTimesCircle className="text-lg" /> Đóng
               </button>
@@ -50,16 +52,27 @@ const UserScheduleDetailModal = ({ slot, onClose, onRegister, onCancelBooking, o
                 <button
                   type="button"
                   onClick={() => onRegister && onRegister(slot._id)}
-                  className="px-6 py-2 bg-yellow-400 text-white rounded-lg font-bold shadow hover:bg-yellow-500 transition flex items-center gap-2"
+                  disabled={registerLoading || cancelLoading || rejectLoading}
+                  className="px-6 py-2 bg-yellow-400 text-white rounded-lg font-bold shadow hover:bg-yellow-500 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <FaRegCheckCircle className="text-lg" /> Đăng ký lịch
+                  {registerLoading ? (
+                    <>
+                      <ShortLoading size="sm" color="white" />
+                      Đang đăng ký...
+                    </>
+                  ) : (
+                    <>
+                      <FaRegCheckCircle className="text-lg" /> Đăng ký lịch
+                    </>
+                  )}
                 </button>
               )}
               {isBookedByUser && onRejectBooking && (
                 <button
                   type="button"
                   onClick={() => setShowCancel(true)}
-                  className="px-6 py-2 bg-red-500 text-white rounded-lg font-bold shadow hover:bg-red-600 transition flex items-center gap-2"
+                  disabled={registerLoading || cancelLoading || rejectLoading}
+                  className="px-6 py-2 bg-red-500 text-white rounded-lg font-bold shadow hover:bg-red-600 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <FaRegTimesCircle className="text-lg" /> Từ chối lịch hẹn
                 </button>
@@ -68,7 +81,8 @@ const UserScheduleDetailModal = ({ slot, onClose, onRegister, onCancelBooking, o
                 <button
                   type="button"
                   onClick={() => setShowCancel(true)}
-                  className="px-6 py-2 bg-red-500 text-white rounded-lg font-bold shadow hover:bg-red-600 transition flex items-center gap-2"
+                  disabled={registerLoading || cancelLoading || rejectLoading}
+                  className="px-6 py-2 bg-red-500 text-white rounded-lg font-bold shadow hover:bg-red-600 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <FaRegTimesCircle className="text-lg" /> Huỷ lịch đặt
                 </button>
@@ -86,6 +100,7 @@ const UserScheduleDetailModal = ({ slot, onClose, onRegister, onCancelBooking, o
                     value={cancelReason}
                     onChange={e => setCancelReason(e.target.value)}
                     placeholder={onRejectBooking ? 'Lý do từ chối lịch...' : 'Lý do huỷ lịch...'}
+                    disabled={registerLoading || cancelLoading || rejectLoading}
                   />
                   <span className="absolute right-3 top-2 text-red-400 pointer-events-none">
                     <FaRegTimesCircle />
@@ -95,31 +110,50 @@ const UserScheduleDetailModal = ({ slot, onClose, onRegister, onCancelBooking, o
                   <button
                     type="button"
                     onClick={() => setShowCancel(false)}
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 font-semibold transition"
+                    disabled={registerLoading || cancelLoading || rejectLoading}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Hủy
                   </button>
                   {onRejectBooking ? (
                     <button
                       type="button"
-                      disabled={!cancelReason.trim()}
+                      disabled={!cancelReason.trim() || registerLoading || cancelLoading || rejectLoading}
                       onClick={() => {
                         if (onRejectBooking && cancelReason.trim()) onRejectBooking(slot._id, cancelReason.trim());
                       }}
                       className="px-6 py-2 bg-red-500 text-white rounded-lg font-bold shadow hover:bg-red-600 transition disabled:opacity-60 flex items-center gap-2"
                     >
-                      <FaRegTimesCircle className="text-lg" /> Xác nhận từ chối
+                      {rejectLoading ? (
+                        <>
+                          <ShortLoading size="sm" color="white" />
+                          Đang từ chối...
+                        </>
+                      ) : (
+                        <>
+                          <FaRegTimesCircle className="text-lg" /> Xác nhận từ chối
+                        </>
+                      )}
                     </button>
                   ) : (
                     <button
                       type="button"
-                      disabled={!cancelReason.trim()}
+                      disabled={!cancelReason.trim() || registerLoading || cancelLoading || rejectLoading}
                       onClick={() => {
                         if (onCancelBooking && cancelReason.trim()) onCancelBooking(slot._id, cancelReason.trim());
                       }}
                       className="px-6 py-2 bg-red-500 text-white rounded-lg font-bold shadow hover:bg-red-600 transition disabled:opacity-60 flex items-center gap-2"
                     >
-                      <FaRegTimesCircle className="text-lg" /> Xác nhận huỷ
+                      {cancelLoading ? (
+                        <>
+                          <ShortLoading size="sm" color="white" />
+                          Đang huỷ...
+                        </>
+                      ) : (
+                        <>
+                          <FaRegTimesCircle className="text-lg" /> Xác nhận huỷ
+                        </>
+                      )}
                     </button>
                   )}
                 </div>

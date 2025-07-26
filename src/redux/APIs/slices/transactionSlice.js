@@ -5,19 +5,12 @@ export const createPaymentUrl = createAsyncThunk(
   "transactions/create_payment_url",
   async ({ amount, orderId, orderInfo, bankCode }, { rejectWithValue }) => {
     try {
-      console.log("Sending API request to /transactions/create_payment_url with:", {
-        amount,
-        orderId,
-        orderInfo,
-        bankCode
-      });
       const response = await axiosClient.post("/transactions/vnpay/create", {
         amount,
         orderId,
         orderInfo,
         bankCode
       });
-      console.log("API response:", response.data);
       return response.data;
     } catch (error) {
       console.error("API error:", error.response?.data || error.message);

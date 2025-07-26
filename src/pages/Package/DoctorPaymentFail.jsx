@@ -1,10 +1,22 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
 
 const DoctorPaymentFail = () => {
   const bgRef = useRef(null);
   const navigate = useNavigate();
+  const query = useQuery();
+
+  // Lấy thông tin từ query params
+  const orderCode = query.get("orderCode");
+  const message = query.get("message") || "Thanh toán đã bị hủy hoặc gặp sự cố.";
+  const packageType = query.get("packageType");
+  const amount = query.get("amount");
 
   // GSAP background animation
   useEffect(() => {
@@ -32,7 +44,7 @@ const DoctorPaymentFail = () => {
       {/* Particles */}
       <div className="absolute inset-0 pointer-events-none z-0">
         {[...Array(30)].map((_, i) => (
-          <div
+          <motion.div
             key={i}
             className="absolute rounded-full bg-white/30 shadow-lg"
             style={{
@@ -56,7 +68,7 @@ const DoctorPaymentFail = () => {
         ))}
       </div>
       {/* Card */}
-      <div
+      <motion.div
         className="relative z-10 bg-white/90 backdrop-blur-xl p-10 rounded-3xl shadow-2xl border-4 border-white/60 flex flex-col items-center w-full max-w-lg"
         initial={{ scale: 0.7, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -68,21 +80,22 @@ const DoctorPaymentFail = () => {
         >
           ❌ Thanh toán thất bại
         </h1>
-        <div
-          className="text-lg text-gray-600 mb-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          Giao dịch của bạn đã bị huỷ hoặc gặp sự cố. Vui lòng thử lại hoặc liên hệ hỗ trợ nếu cần thiết.
+        <div className="text-lg text-gray-600 mb-4">
+          {message}
         </div>
-        <div
+        <ul className="mb-4 text-gray-700 text-left">
+          {orderCode && <li><b>Mã đơn hàng:</b> {orderCode}</li>}
+          {packageType && <li><b>Gói:</b> {packageType}</li>}
+          {amount && <li><b>Số tiền:</b> {amount} VND</li>}
+        </ul>
+        <motion.div
           className="mt-6 inline-block px-8 py-3 rounded-full font-bold text-lg bg-gradient-to-r from-red-400 via-pink-400 to-orange-400 text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-white/70 cursor-pointer"
           whileHover={{ scale: 1.08, boxShadow: '0 0 32px 0 #fcb69f99' }}
-          onClick={() => navigate('/doctor/packages')}
+          onClick={() => navigate('/doctor/payment/history')}
         >
-          Quay lại trang mua gói
-        </div>
-      </div>
+          Quay lại lịch sử thanh toán
+        </motion.div>
+      </motion.div>
       {/* Extra glow effect */}
       <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-pink-200 rounded-full opacity-30 blur-3xl z-0 animate-pulse" />
       <div className="absolute -bottom-32 right-1/2 translate-x-1/2 w-[500px] h-[500px] bg-orange-200 rounded-full opacity-20 blur-3xl z-0 animate-pulse" />

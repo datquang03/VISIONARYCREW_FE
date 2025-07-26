@@ -128,7 +128,7 @@ const DoctorPackages = () => {
               whileHover="hover"
               variants={cardVariants}
               onClick={() => {
-                console.log('Card clicked, pkg:', pkg); // Debug: log object khi click
+            
                 setSelected(pkg);
                 setPaymentModalOpen(true);
                 if (pkg.pricing) {
@@ -179,8 +179,7 @@ const DoctorPackages = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
               >
-                {console.log('selected in modal:', selected)}
-                {console.log('paymentLoading:', paymentLoading, 'paymentSuccess:', paymentSuccess)}
+                
                 <h2 className="text-2xl font-bold mb-4 text-slate-800">{selected.name}</h2>
 
                 {paymentLoading && (

@@ -67,7 +67,7 @@ const ScheduleTable = ({
                     );
                     if (slotObj) {
                       if (slotObj.patient) {
-                        if (String(slotObj.patient) === String(currentUser?._id)) {
+                        if (String(slotObj.patient) === String(currentUser?._id || currentUser?.id)) {
                           status = 'booked-by-user';
                         } else {
                           status = 'booked-by-other';
@@ -182,8 +182,11 @@ const ScheduleTable = ({
                     );
                     if (slotObj) {
                       if (slotObj.patient) {
-                        if (String(slotObj.patient) === String(currentUser.id)) status = 'booked-by-user';
-                        else status = 'booked-by-other';
+                        if (String(slotObj.patient) === String(currentUser?._id || currentUser?.id)) {
+                          status = 'booked-by-user';
+                        } else {
+                          status = 'booked-by-other';
+                        }
                       } else {
                         status = 'doctor-free';
                       }

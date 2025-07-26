@@ -11,7 +11,7 @@ import { getDoctorSchedules, registerSchedule, cancelRegisteredSchedule } from '
 import { ConfirmModal } from '../../components/modal/ConfirmModal';
 import { CustomToast } from '../../components/Toast/CustomToast';
 import UserScheduleDetailModal from '../../components/modal/UserScheduleDetailModal';
-import { addNotification } from '../../redux/APIs/slices/notificationSlice';
+import { createNotification } from '../../redux/APIs/slices/notificationSlice';
 
 const HealthcareBookingSystem = () => {
   // const navigate = useNavigate();
@@ -20,6 +20,8 @@ const HealthcareBookingSystem = () => {
   // Chỉ lấy đúng mảng object bác sĩ (doctorList[1])
   const doctors = Array.isArray(doctorList?.doctors) ? doctorList.doctors : [];
   const { doctorSchedules = [] } = useSelector(state => state.scheduleSlice);
+  const { registerLoading, cancelLoading } = useSelector(state => state.scheduleSlice);
+  const { createLoading: notificationCreateLoading } = useSelector(state => state.notification);
   const currentUser = useSelector(state => state.authSlice.user);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -93,7 +95,29 @@ const HealthcareBookingSystem = () => {
         handleCreateAvailableSlot(doctorId, date, time);
       }
     } else if (currentUser.role === 'user') {
-      if (isSlotAvailable(doctorId, date, time) && !isSlotBooked(doctorId, date, time)) {
+      // Kiểm tra xem slot có phải do user hiện tại đăng ký không
+      const dateStr = formatDate(date);
+      const [start, end] = time.split(' - ');
+      const parseTime = (t) => {
+        let [h, m] = t.replace('AM', '').replace('PM', '').trim().split(':');
+        if (!m) m = '00';
+        h = h.padStart(2, '0');
+        return `${h}:${m}`;
+      };
+      const startTime = parseTime(start);
+      const endTime = parseTime(end);
+      
+      const foundSlot = doctorSchedules.find(slot =>
+        slot.date?.slice(0, 10) === dateStr &&
+        slot.timeSlot?.startTime === startTime &&
+        slot.timeSlot?.endTime === endTime
+      );
+
+      if (foundSlot && foundSlot.patient && String(foundSlot.patient) === String(currentUser?.id)) {
+        // Nếu slot do user hiện tại đăng ký, hiển thị modal chi tiết
+        setSlotDetail(foundSlot);
+      } else if (foundSlot && !foundSlot.patient) {
+        // Nếu slot còn trống, đăng ký
         handleBookAppointment(doctorId, date, time);
       }
     }
@@ -107,7 +131,7 @@ const HealthcareBookingSystem = () => {
     try {
       await dispatch(registerSchedule(scheduleId)).unwrap();
       CustomToast({ message: 'Đăng ký lịch thành công!', type: 'success' });
-      dispatch(addNotification({
+      dispatch(createNotification({
         type: 'booking',
         message: 'Bạn đã đặt lịch thành công!',
         time: new Date().toLocaleString('vi-VN'),
@@ -128,7 +152,7 @@ const HealthcareBookingSystem = () => {
         cancelRegisteredSchedule({ scheduleId, cancelReason })
       ).unwrap();
       CustomToast({ message: 'Huỷ lịch thành công!', type: 'success' });
-      dispatch(addNotification({
+      dispatch(createNotification({
         type: 'cancel',
         message: 'Bạn đã huỷ một lịch hẹn!',
         time: new Date().toLocaleString('vi-VN'),
@@ -234,7 +258,7 @@ const HealthcareBookingSystem = () => {
               if (found) {
                 if (found.patient) {
                   if (String(found.patient) === String(currentUser?.id)) {
-                    return 'booked-by-user';
+                    return 'booked-by-user'; // Slot màu vàng cho user đã đăng ký
                   } else {
                     return 'booked-by-other';
                   }
@@ -257,6 +281,9 @@ const HealthcareBookingSystem = () => {
             onRegister={handleRegister}
             onCancelBooking={handleCancelBooking}
             currentUser={currentUser || {}}
+            registerLoading={registerLoading}
+            cancelLoading={cancelLoading}
+            notificationCreateLoading={notificationCreateLoading}
           />
         )}
       </div>

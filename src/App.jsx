@@ -21,6 +21,12 @@ import DoctorRegisterForm from "./pages/Dashboard/Doctor/DoctorRegisterForm";
 import { SidebarProvider } from "./pages/Dashboard/components/SidebarContext";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "./components/Toast/CustomToast";
+import {
+  AdminProtectedRouter,
+  DoctorProtectedRouter,
+  AdminAndUserProtectedRouter,
+  
+} from "./middlewares/Auth";
 // Xóa import các ProtectedRouter vì không dùng nữa
 import UserProfile from "./pages/Profile/User/UserProfile";
 import DoctorDashboardContent from "./pages/Dashboard/Doctor/DoctorRegisterForm";
@@ -45,7 +51,7 @@ const App = () => {
       <SidebarProvider>
         <ToastContainer />
         <Routes>
-          {/* Tất cả routes đều public để test */}
+          {/* Public routes */}
           <Route path="/" element={<Homepage />} />
           <Route path="/login" element={<DefaultLogin />} />
           <Route path="/login/doctor" element={<DoctorLogin />} />
@@ -53,25 +59,37 @@ const App = () => {
           <Route path="/register/user" element={<UserRegister />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/register/doctor" element={<DoctorRegister />} />
-          <Route path="/booking" element={<UserBookingPage />} />
-          <Route path="/profile" element={<UserProfile />} />
-          <Route path="/admin" element={<AdminDashboard />}>
-            <Route index element={<div>Welcome to Admin Dashboard</div>} />
-            <Route path="dashboard" element={<div>Admin Dashboard Content</div>} />
-            <Route path="doctors" element={<DoctorsPage />} />
-            <Route path="users" element={<UsersManagement />} />
-            <Route path="doctors/pending" element={<DoctorRegisterTab />} />
+
+          {/* User protected routes */}
+          <Route element={<AdminAndUserProtectedRouter />}>
+            <Route path="/booking" element={<UserBookingPage />} />
+            <Route path="/profile" element={<UserProfile />} />
           </Route>
-          <Route path="/doctor" element={<DoctorDashboard />}>
-            <Route path="dashboard" element={<DoctorDashboardContent />} />
-            <Route path="payment/history" element={<DoctorPaymentHistory />} />
-            <Route path="form" element={<DoctorRegisterForm />} />
+
+          {/* Admin protected routes */}
+          <Route element={<AdminProtectedRouter />}>
+            <Route path="/admin" element={<AdminDashboard />}>
+              <Route index element={<div>Welcome to Admin Dashboard</div>} />
+              <Route path="dashboard" element={<div>Admin Dashboard Content</div>} />
+              <Route path="doctors" element={<DoctorsPage />} />
+              <Route path="users" element={<UsersManagement />} />
+              <Route path="doctors/pending" element={<DoctorRegisterTab />} />
+            </Route>
           </Route>
-          <Route path="/doctor/booking" element={<DoctorSchedule />} />
-          <Route path="/doctor/packages" element={<DoctorPackages />} />
-          <Route path="/doctor/profile" element={<DoctorProfile />} />
-          <Route path="/doctor/payment/success" element={<DoctorPaymentSuccess />} />
-          <Route path="/doctor/payment/cancel" element={<DoctorPaymentFail />} />
+
+          {/* Doctor protected routes */}
+          <Route element={<DoctorProtectedRouter />}>
+            <Route path="/doctor" element={<DoctorDashboard />}>
+              <Route path="dashboard" element={<DoctorDashboardContent />} />
+              <Route path="payment/history" element={<DoctorPaymentHistory />} />
+              <Route path="form" element={<DoctorRegisterForm />} />
+            </Route>
+            <Route path="/doctor/booking" element={<DoctorSchedule />} />
+            <Route path="/doctor/packages" element={<DoctorPackages />} />
+            <Route path="/doctor/profile" element={<DoctorProfile />} />
+            <Route path="/doctor/payment/success" element={<DoctorPaymentSuccess />} />
+            <Route path="/doctor/payment/cancelled" element={<DoctorPaymentFail />} />
+          </Route>
         </Routes>
       </SidebarProvider>
     </BrowserRouter>

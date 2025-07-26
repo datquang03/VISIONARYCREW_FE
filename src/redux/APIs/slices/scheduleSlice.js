@@ -124,6 +124,14 @@ const scheduleSlice = createSlice({
     error: null,
     success: null,
     currentSchedule: null,
+    // Individual loading states
+    registerLoading: false,
+    cancelLoading: false,
+    createLoading: false,
+    updateLoading: false,
+    deleteLoading: false,
+    rejectLoading: false,
+    makeAvailableLoading: false,
   },
   reducers: {
     clearScheduleState: (state) => {
@@ -180,63 +188,63 @@ const scheduleSlice = createSlice({
     });
     // createSchedule
     builder.addCase(createSchedule.pending, (state) => {
-      state.loading = true; state.error = null; state.success = null;
+      state.createLoading = true; state.error = null; state.success = null;
     });
     builder.addCase(createSchedule.fulfilled, (state, action) => {
-      state.loading = false; state.success = action.payload.message; state.currentSchedule = action.payload.schedule;
+      state.createLoading = false; state.success = action.payload.message; state.currentSchedule = action.payload.schedule;
     });
     builder.addCase(createSchedule.rejected, (state, action) => {
-      state.loading = false; state.error = action.payload;
+      state.createLoading = false; state.error = action.payload;
     });
     // updateSchedule
     builder.addCase(updateSchedule.pending, (state) => {
-      state.loading = true; state.error = null; state.success = null;
+      state.updateLoading = true; state.error = null; state.success = null;
     });
     builder.addCase(updateSchedule.fulfilled, (state, action) => {
-      state.loading = false; state.success = action.payload.message; state.currentSchedule = action.payload.schedule;
+      state.updateLoading = false; state.success = action.payload.message; state.currentSchedule = action.payload.schedule;
     });
     builder.addCase(updateSchedule.rejected, (state, action) => {
-      state.loading = false; state.error = action.payload;
+      state.updateLoading = false; state.error = action.payload;
     });
     // deleteSchedule
     builder.addCase(deleteSchedule.pending, (state) => {
-      state.loading = true; state.error = null; state.success = null;
+      state.deleteLoading = true; state.error = null; state.success = null;
     });
     builder.addCase(deleteSchedule.fulfilled, (state, action) => {
-      state.loading = false; state.success = action.payload.message;
+      state.deleteLoading = false; state.success = action.payload.message;
     });
     builder.addCase(deleteSchedule.rejected, (state, action) => {
-      state.loading = false; state.error = action.payload;
+      state.deleteLoading = false; state.error = action.payload;
     });
     // makeScheduleAvailable
     builder.addCase(makeScheduleAvailable.pending, (state) => {
-      state.loading = true; state.error = null; state.success = null;
+      state.makeAvailableLoading = true; state.error = null; state.success = null;
     });
     builder.addCase(makeScheduleAvailable.fulfilled, (state, action) => {
-      state.loading = false; state.success = action.payload.message; state.currentSchedule = action.payload.schedule;
+      state.makeAvailableLoading = false; state.success = action.payload.message; state.currentSchedule = action.payload.schedule;
     });
     builder.addCase(makeScheduleAvailable.rejected, (state, action) => {
-      state.loading = false; state.error = action.payload;
+      state.makeAvailableLoading = false; state.error = action.payload;
     });
     // registerSchedule
     builder.addCase(registerSchedule.pending, (state) => {
-      state.loading = true; state.error = null; state.success = null;
+      state.registerLoading = true; state.error = null; state.success = null;
     });
     builder.addCase(registerSchedule.fulfilled, (state, action) => {
-      state.loading = false; state.success = action.payload.message; state.currentSchedule = action.payload.schedule;
+      state.registerLoading = false; state.success = action.payload.message; state.currentSchedule = action.payload.schedule;
     });
     builder.addCase(registerSchedule.rejected, (state, action) => {
-      state.loading = false; state.error = action.payload;
+      state.registerLoading = false; state.error = action.payload;
     });
     // cancelRegisteredSchedule
     builder.addCase(cancelRegisteredSchedule.pending, (state) => {
-      state.loading = true; state.error = null; state.success = null;
+      state.cancelLoading = true; state.error = null; state.success = null;
     });
     builder.addCase(cancelRegisteredSchedule.fulfilled, (state, action) => {
-      state.loading = false; state.success = action.payload.message; state.currentSchedule = action.payload.schedule;
+      state.cancelLoading = false; state.success = action.payload.message; state.currentSchedule = action.payload.schedule;
     });
     builder.addCase(cancelRegisteredSchedule.rejected, (state, action) => {
-      state.loading = false; state.error = action.payload;
+      state.cancelLoading = false; state.error = action.payload;
     });
     // getMyRegisteredSchedules
     builder.addCase(getMyRegisteredSchedules.pending, (state) => {
@@ -251,13 +259,13 @@ const scheduleSlice = createSlice({
     });
     // rejectRegisterSchedule
     builder.addCase(rejectRegisterSchedule.pending, (state) => {
-      state.loading = true; state.error = null; state.success = null;
+      state.rejectLoading = true; state.error = null; state.success = null;
     });
     builder.addCase(rejectRegisterSchedule.fulfilled, (state, action) => {
-      state.loading = false; state.success = action.payload.message; state.currentSchedule = action.payload.schedule;
+      state.rejectLoading = false; state.success = action.payload.message; state.currentSchedule = action.payload.schedule;
     });
     builder.addCase(rejectRegisterSchedule.rejected, (state, action) => {
-      state.loading = false; state.error = action.payload;
+      state.rejectLoading = false; state.error = action.payload;
     });
   },
 });
