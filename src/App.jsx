@@ -35,6 +35,7 @@ import DoctorPaymentHistory from "./pages/Dashboard/Doctor/DoctorPaymentHistory"
 import DoctorPaymentFail from "./pages/Package/DoctorPaymentFail";
 import DoctorPendingSchedule from "./pages/Dashboard/Doctor/DoctorPendingSchedule";
 import AIChatBubble from "./components/AIChatBubble/AIChatBubble";
+import DoctorHome from "./pages/Dashboard/Doctor/DoctorHome";
 
 
 const App = () => {
@@ -87,7 +88,8 @@ const App = () => {
           {/* Doctor protected routes */}
           <Route element={<DoctorProtectedRouter />}>
             <Route path="/doctor" element={<DoctorDashboard />}>
-              <Route path="dashboard" element={<DoctorDashboardContent />} />
+              <Route index element={<DoctorHome />} />
+              <Route path="dashboard" element={<DoctorHome />} />
               <Route
                 path="payment/history"
                 element={<DoctorPaymentHistory />}

@@ -116,7 +116,7 @@ const ScheduleTable = ({
                     return (
                       <td
                         key={colIdx}
-                        className={`border transition duration-200 align-middle w-[80px] h-[60px] md:w-[120px] md:h-[100px] p-0 cursor-pointer ${statusClass} ${
+                        className={`border transition duration-200 align-middle w-[80px] h-[60px] md:w-[120px] md:h-[100px] p-0 ${past && status !== 'booked-by-user' ? 'cursor-not-allowed' : 'cursor-pointer'} ${statusClass} ${
                           isToday ? 'bg-green-50 border-l-2 border-green-400' : ''
                         }`}
                         onClick={() => {
@@ -125,7 +125,7 @@ const ScheduleTable = ({
                               handleSlotDetail({ ...slotObj, slotType: status });
                             } else if ((status === 'doctor-free' || status === 'available') && slotObj && !past) {
                               handleSlotDetail({ ...slotObj, slotType: status });
-                            } else if (!past) {
+                            } else if (slotObj || !past) {
                               handleSlotClick(selectedDoctor.id, day, timeSlot);
                             }
                           }
@@ -218,14 +218,14 @@ const ScheduleTable = ({
                   return (
                     <button
                       key={j}
-                      className={`w-full text-left px-4 py-3 ${bgClass} transition-all`}
+                      className={`w-full text-left px-4 py-3 ${bgClass} transition-all ${pastMobile && status !== 'booked-by-user' ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                       onClick={() => {
                         if (selectedDoctor) {
                           if (status === 'booked-by-user' && slotObj) {
                             handleSlotDetail({ ...slotObj, slotType: status });
                           } else if ((status === 'doctor-free' || status === 'available') && slotObj && !pastMobile) {
                             handleSlotDetail({ ...slotObj, slotType: status });
-                          } else if (!pastMobile) {
+                          } else if (slotObj || !pastMobile) {
                             handleSlotClick(selectedDoctor.id, day, timeSlot);
                           }
                         }

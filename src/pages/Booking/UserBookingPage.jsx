@@ -118,6 +118,19 @@ const HealthcareBookingSystem = () => {
         slot.timeSlot?.endTime === endTime
       );
 
+      // Cho phép click nếu có slot (dù ở quá khứ) hoặc slot trống không ở quá khứ
+      const isPastSlot = () => {
+        const now = new Date();
+        const slotDate = new Date(date);
+        const [endHour, endMin] = endTime.split(':');
+        slotDate.setHours(Number(endHour), Number(endMin), 0, 0);
+        return slotDate <= now;
+      };
+
+      const canClick = foundSlot || !isPastSlot();
+      
+      if (!canClick) return;
+
       if (foundSlot && foundSlot.patient && String(foundSlot.patient) === String(currentUser?.id)) {
         // Nếu slot do user hiện tại đăng ký, hiển thị modal chi tiết
         setSlotDetail(foundSlot);
