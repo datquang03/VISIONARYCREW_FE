@@ -16,12 +16,24 @@ export const ConfirmModal = ({ onConfirm, onCancel, time, date, defaultValues, o
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    let timeSlot;
+    if (typeof time === 'string') {
+      timeSlot = {
+        startTime: time.split(' - ')[0],
+        endTime: time.split(' - ')[1],
+      };
+    } else if (time && typeof time === 'object') {
+      timeSlot = {
+        startTime: time.startTime,
+        endTime: time.endTime,
+      };
+    } else {
+      console.error('❌ Invalid time format:', time);
+      return;
+    }
     onConfirm({
       date: date.toISOString().split('T')[0],
-      timeSlot: {
-        startTime: time.split(' - ')[0].replace('AM', '').replace('PM', '').trim() + ':00',
-        endTime: time.split(' - ')[1].replace('AM', '').replace('PM', '').trim() + ':00',
-      },
+      timeSlot,
       appointmentType,
       notes,
       meetingLink: appointmentType === 'online' ? meetingLink : undefined,

@@ -2,7 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import authSlice from "./APIs/slices/authSlice";
 import tranSlice from "./APIs/slices/transactionSlice"
 import doctorSlice from "./APIs/slices/doctorSlice";
-import messageSlice from "./APIs/slices/messageSlice";
+
 import doctorRegisterSlice from "./APIs/slices/doctorRegisterSlice";
 import adminSlice from "./APIs/slices/adminSlice";
 import userSlice from "./APIs/slices/userProfileSlice";
@@ -11,12 +11,13 @@ import doctorProfileSlice from "./APIs/slices/doctorProfileSlice";
 import globalReducer from './APIs/slices/globalSlice';
 import scheduleReducer from "./APIs/slices/scheduleSlice";
 import notificationReducer from './APIs/slices/notificationSlice';
+import aiReducer from './APIs/slices/aiSlice';
 const store = configureStore({
   reducer: {
     authSlice: authSlice.reducer,
     doctorSlice: doctorSlice.reducer,
     tranSlice: tranSlice.reducer,
-    messageSlice: messageSlice.reducer,
+
     doctorRegisterSlice: doctorRegisterSlice.reducer,
     adminSlice: adminSlice.reducer,
     userProfileSlice: userSlice.reducer,
@@ -25,6 +26,7 @@ const store = configureStore({
     global: globalReducer,
     scheduleSlice: scheduleReducer,
     notification: notificationReducer,
+    ai: aiReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -2,15 +2,19 @@ import React, { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { FaRegTimesCircle, FaRegCheckCircle } from 'react-icons/fa';
 import ShortLoading from '../Loading/ShortLoading';
+import { useNavigate } from 'react-router-dom';
 
 const UserScheduleDetailModal = ({ slot, onClose, onRegister, onCancelBooking, onRejectBooking, registerLoading = false, cancelLoading = false, rejectLoading = false }) => {
   const [showCancel, setShowCancel] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
+  const navigate = useNavigate();
+  
   if (!slot) return null;
   const slotType = slot?.slotType;
   const canRegister = slotType === 'doctor-free' || slotType === 'available';
   const isBookedByUser = slotType === 'booked-by-user';
   const isBookedByOther = slotType === 'booked-by-other';
+  const isAccepted = slot.status === 'accepted';
   const dateStr = slot.date ? new Date(slot.date).toLocaleDateString('vi-VN') : '';
 
   return (
@@ -26,6 +30,10 @@ const UserScheduleDetailModal = ({ slot, onClose, onRegister, onCancelBooking, o
               <span className="font-semibold">Trạng thái:</span> {' '}
               {isBookedByOther ? (
                 <span className="text-red-600 font-bold uppercase">ĐÃ CÓ NGƯỜI ĐẶT</span>
+              ) : isAccepted ? (
+                <span className="text-green-600 font-bold uppercase bg-green-100 px-3 py-1 rounded-full border-2 border-green-300 shadow-sm">
+                  ✅ ĐÃ CHẤP NHẬN
+                </span>
               ) : slot.patient ? (
                 <span className="text-yellow-600 font-bold uppercase">ĐÃ ĐẶT</span>
               ) : (
@@ -87,6 +95,8 @@ const UserScheduleDetailModal = ({ slot, onClose, onRegister, onCancelBooking, o
                   <FaRegTimesCircle className="text-lg" /> Huỷ lịch đặt
                 </button>
               )}
+
+
             </div>
             {showCancel && (
               <div className="mt-2 bg-red-50 border border-red-200 rounded-lg p-4 animate-fade-in">

@@ -40,7 +40,7 @@ const optionData = [
     id: 4,
     name: "Cần hỗ trợ mà không cần phải tốn phí ? ",
     description: "Liên hệ với bác sĩ qua hệ thống tin nhắn",
-    navigation: "/message",
+    navigation: "/chat",
     icon: (
       <FaMessage className="text-8xl text-orange-600 absolute bottom-4 right-4" />
     ),

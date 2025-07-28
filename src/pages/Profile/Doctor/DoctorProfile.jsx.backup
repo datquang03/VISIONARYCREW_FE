@@ -10,59 +10,6 @@ import { FaPlus, FaTimesCircle, FaTrash } from 'react-icons/fa';
 
 const tabs = ['profile', 'settings', 'activity'];
 
-const Input = ({ label, name, value, onChange, type = 'text', disabled = false, className = '', placeholder }) => {
-  const inputRef = useRef(null);
-  const hasAnimated = useRef(false);
-
-  useEffect(() => {
-    if (inputRef.current && !hasAnimated.current) {
-      gsap.fromTo(
-        inputRef.current,
-        { opacity: 0, x: -10 },
-        { opacity: 1, x: 0, duration: 0.3, ease: 'power2.out' }
-      );
-      hasAnimated.current = true;
-    }
-  }, []);
-
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
-      <input
-        ref={inputRef}
-        type={type}
-        name={name}
-        value={value || ''}
-        onChange={onChange}
-        disabled={disabled}
-        placeholder={placeholder}
-        className={`mt-1 w-full max-w-lg border border-gray-300 rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 ${className}`}
-      />
-    </div>
-  );
-};
-
-const Activity = ({ title, items }) => {
-  const activityRef = useRef(null);
-
-  useEffect(() => {
-    if (activityRef.current) {
-      gsap.fromTo(
-        activityRef.current,
-        { opacity: 0, x: 20 },
-        { opacity: 1, x: 0, duration: 0.4, ease: 'power2.out' }
-      );
-    }
-  }, []);
-
-  return (
-    <div ref={activityRef}>
-      <h3 className="text-lg font-semibold">{title}</h3>
-      <p>{items?.length ? items.join(', ') : `Chưa có ${title.toLowerCase()}`}</p>
-    </div>
-  );
-};
-
 const DoctorProfile = () => {
   const dispatch = useDispatch();
   const doctorProfile = useSelector((state) => state.doctorProfile || {});
@@ -197,6 +144,8 @@ const DoctorProfile = () => {
   const handleAddWorkExp = () => setWorkExperience(prev => [...prev, { workplace: "", position: "", startYear: "", endYear: "" }]);
   const handleRemoveWorkExp = (idx) => setWorkExperience(prev => prev.filter((_, i) => i !== idx));
 
+
+
   const handleUpdate = () => {
     // Basic validation
     if (!formData.fullName || !formData.email) {
@@ -218,10 +167,37 @@ const DoctorProfile = () => {
       return currentValue !== originalValue;
     });
 
-    if (!hasChanges && !avatarFile && certificationImages.length === 0) {
+    if (!hasChanges && !avatarFile) {
       CustomToast('Không có thay đổi nào để cập nhật!', 'info');
       return;
     }
+
+    // Only send changed fields
+    const changedFields = {};
+    Object.keys(formData).forEach(key => {
+      const currentValue = formData[key];
+      const originalValue = doctor[key];
+      
+      if (key === 'education' || key === 'workExperience') {
+        const currentArray = currentValue ? currentValue.split(',').map(item => item.trim()).filter(item => item) : [];
+        const originalArray = Array.isArray(originalValue) ? originalValue : [];
+        if (JSON.stringify(currentArray) !== JSON.stringify(originalArray)) {
+          changedFields[key] = JSON.stringify(currentArray);
+        }
+      } else if (currentValue !== originalValue) {
+        changedFields[key] = currentValue;
+      }
+    });
+
+    // Note: Avatar will be handled separately via the upload button
+
+    // Don't send if no changes and no certifications to upload
+    if (Object.keys(changedFields).length === 0 && certificationImages.length === 0) {
+      CustomToast('Không có thay đổi nào để cập nhật!', 'info');
+      return;
+    }
+
+
 
     // If there are certifications to upload, use FormData
     if (certificationImages.length > 0) {
@@ -234,18 +210,18 @@ const DoctorProfile = () => {
       
       const formData = new FormData();
       
-      // Add changed fields
-      Object.keys(formData).forEach(key => {
-        if (key === 'education' || key === 'workExperience') {
-          formData.append(key, JSON.stringify(formData[key]));
-        } else {
-          formData.append(key, formData[key]);
-        }
-      });
-      
-      // Add education and workExperience
-      formData.append('education', JSON.stringify(education));
-      formData.append('workExperience', JSON.stringify(workExperience));
+                    // Add changed fields
+              Object.keys(changedFields).forEach(key => {
+                if (key === 'education' || key === 'workExperience') {
+                  formData.append(key, JSON.stringify(changedFields[key]));
+                } else {
+                  formData.append(key, changedFields[key]);
+                }
+              });
+              
+              // Add education and workExperience
+              formData.append('education', JSON.stringify(education));
+              formData.append('workExperience', JSON.stringify(workExperience));
       
       // Add certifications
       certificationImages.forEach((cert, index) => {
@@ -266,7 +242,7 @@ const DoctorProfile = () => {
         }
       });
     } else {
-      // No certifications, use regular JSON
+            // No certifications, use regular JSON
       dispatch(updateDoctorProfile(changedFields)).then((res) => {
         if (res.meta.requestStatus === 'fulfilled') {
           CustomToast('Cập nhật thành công!', 'success');
@@ -284,15 +260,35 @@ const DoctorProfile = () => {
     gsap.fromTo(
       '.tab-content',
       { opacity: 0, x: 20 },
-      { opacity: 1, x: 0, duration: 0.3, ease: 'power2.out' }
+      { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out' }
     );
   };
 
+  // Format date to dd/mm/yyyy for display
   const formatDate = (dateStr) => {
     if (!dateStr) return 'Chưa cập nhật';
     try {
-      return new Date(dateStr).toLocaleDateString('vi-VN');
+      let date;
+      if (dateStr.includes('-') && dateStr.split('-')[0].length === 4) {
+        // YYYY-MM-DD
+        date = new Date(dateStr);
+      } else if (dateStr.includes('-') && dateStr.split('-')[0].length === 2) {
+        // DD-MM-YYYY
+        const [day, month, year] = dateStr.split('-');
+        date = new Date(`${year}-${month}-${day}`);
+      } else {
+        date = new Date(dateStr);
+      }
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid date:', dateStr);
+        return 'Chưa cập nhật';
+      }
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
     } catch (error) {
+      console.warn('Date parsing error:', error, dateStr);
       return 'Chưa cập nhật';
     }
   };
@@ -397,10 +393,55 @@ const DoctorProfile = () => {
                 disabled
               />
               <Input
-                label="Số lịch hẹn còn lại"
-                value={doctor?.subscription?.scheduleLimits || 'Chưa cập nhật'}
+                label="Ưu tiên"
+                value={doctor?.subscription?.isPriority ? 'Có' : 'Không'}
                 disabled
               />
+              <Input label="Ngày tạo" value={formatDate(doctor?.createdAt)} disabled />
+              <Input label="Ngày cập nhật" value={formatDate(doctor?.updatedAt)} disabled
+
+ />
+              <Input
+                label="Giới hạn lịch hàng tuần"
+                value={`${doctor?.subscription?.scheduleLimits?.weekly || 0} (Đã dùng: ${doctor?.subscription?.scheduleLimits?.used || 0})`}
+                disabled
+              />
+              <Input
+                label="Ngày đặt lại lịch"
+                value={formatDate(doctor?.subscription?.scheduleLimits?.resetDate)}
+                disabled
+              />
+              <Input
+                label="Tin nhắn từ chối"
+                value={doctor?.rejectionMessage || 'Không có'}
+                disabled
+              />
+              {/* Học vấn */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Học vấn</label>
+                {Array.isArray(doctor?.education) && doctor.education.length > 0 ? (
+                  <ul className="list-disc pl-5 text-sm text-gray-700">
+                    {doctor.education.map(e => (
+                      <li key={e._id}>{e.institution} - {e.degree} ({e.year})</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <span className="text-gray-400">Chưa cập nhật</span>
+                )}
+              </div>
+              {/* Kinh nghiệm làm việc */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Kinh nghiệm làm việc</label>
+                {Array.isArray(doctor?.workExperience) && doctor.workExperience.length > 0 ? (
+                  <ul className="list-disc pl-5 text-sm text-gray-700">
+                    {doctor.workExperience.map(w => (
+                      <li key={w._id}>{w.workplace} - {w.position} ({w.startYear} - {w.endYear})</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <span className="text-gray-400">Chưa cập nhật</span>
+                )}
+              </div>
               <Input
                 label="Công việc gần đây"
                 name="recentJob"
@@ -521,90 +562,89 @@ const DoctorProfile = () => {
               {/* Certifications Section */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-800">Chứng chỉ</h3>
-                
-                {/* Existing certifications */}
-                {doctor?.certifications?.length ? (
-                  <div className="space-y-2">
-                    {doctor.certifications.map((cert, index) => (
-                      <div key={cert._id || index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border group">
-                        <div className="flex items-center gap-3">
-                          <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                          </svg>
-                          <a
-                            href={cert.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline font-medium"
-                          >
-                            {cert.description || 'Chứng chỉ'}
-                          </a>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-500">
-                            {formatDate(cert.uploadedAt)}
-                          </span>
-                          <button
-                            onClick={() => removeExistingCertification(index)}
-                            className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                            title="Xóa chứng chỉ"
-                          >
-                            <FaTrash className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 italic">Chưa có chứng chỉ nào</p>
-                )}
-
-                {/* Upload new certification */}
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Thêm chứng chỉ mới</h4>
-                  
-                  {/* Certification previews */}
-                  <div className="flex flex-wrap gap-4 mb-4">
-                    {certificationImages.map(({ file, description }, index) => (
-                      <div key={index} className="relative w-28">
-                        <img src={URL.createObjectURL(file)} alt={`cert-${index}`} className="w-28 h-28 object-cover rounded-xl" />
-                        <button 
-                          type="button" 
-                          className="absolute -top-2 -right-2 text-red-600 bg-white rounded-full shadow hover:bg-red-50" 
-                          onClick={() => removeCertification(index)}
+              
+              {/* Existing certifications */}
+              {doctor?.certifications?.length ? (
+                <div className="space-y-2">
+                  {doctor.certifications.map((cert, index) => (
+                    <div key={cert._id || index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border group">
+                      <div className="flex items-center gap-3">
+                        <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <a
+                          href={cert.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline font-medium"
                         >
-                          <FaTimesCircle size={18} />
-                        </button>
-                        <input 
-                          type="text" 
-                          placeholder="Mô tả" 
-                          value={description} 
-                          onChange={e => handleCertDescriptionChange(index, e.target.value)} 
-                          className="mt-1 w-full px-2 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" 
-                        />
+                          {cert.description || 'Chứng chỉ'}
+                        </a>
                       </div>
-                    ))}
-                    
-                    {/* Add certification button */}
-                    <label className="flex items-center justify-center w-28 h-28 border-2 border-dashed border-gray-300 bg-gray-100 rounded-xl cursor-pointer hover:border-blue-400 transition-colors">
-                      <FaPlus size={20} className="text-gray-500" />
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        multiple 
-                        onChange={handleCertificationChange} 
-                        className="hidden" 
-                      />
-                    </label>
-                  </div>
-
-                  {/* Note: Certifications will be uploaded with the main update button */}
-                  {certificationImages.length > 0 && (
-                    <div className="text-sm text-blue-600 font-medium">
-                      ✓ {certificationImages.length} chứng chỉ sẽ được tải lên khi bấm "Cập nhật"
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-500">
+                          {formatDate(cert.uploadedAt)}
+                        </span>
+                        <button
+                          onClick={() => removeExistingCertification(index)}
+                          className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                          title="Xóa chứng chỉ"
+                        >
+                          <FaTrash className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
-                  )}
+                  ))}
                 </div>
+              ) : (
+                <p className="text-gray-500 italic">Chưa có chứng chỉ nào</p>
+              )}
+
+              {/* Upload new certification */}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Thêm chứng chỉ mới</h4>
+                
+                {/* Certification previews */}
+                <div className="flex flex-wrap gap-4 mb-4">
+                  {certificationImages.map(({ file, description }, index) => (
+                    <div key={index} className="relative w-28">
+                      <img src={URL.createObjectURL(file)} alt={`cert-${index}`} className="w-28 h-28 object-cover rounded-xl" />
+                      <button 
+                        type="button" 
+                        className="absolute -top-2 -right-2 text-red-600 bg-white rounded-full shadow hover:bg-red-50" 
+                        onClick={() => removeCertification(index)}
+                      >
+                        <FaTimesCircle size={18} />
+                      </button>
+                      <input 
+                        type="text" 
+                        placeholder="Mô tả" 
+                        value={description} 
+                        onChange={e => handleCertDescriptionChange(index, e.target.value)} 
+                        className="mt-1 w-full px-2 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" 
+                      />
+                    </div>
+                  ))}
+                  
+                  {/* Add certification button */}
+                  <label className="flex items-center justify-center w-28 h-28 border-2 border-dashed border-gray-300 bg-gray-100 rounded-xl cursor-pointer hover:border-blue-400 transition-colors">
+                    <FaPlus size={20} className="text-gray-500" />
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      multiple 
+                      onChange={handleCertificationChange} 
+                      className="hidden" 
+                    />
+                  </label>
+                </div>
+
+                {/* Note: Certifications will be uploaded with the main update button */}
+                {certificationImages.length > 0 && (
+                  <div className="text-sm text-blue-600 font-medium">
+                    ✓ {certificationImages.length} chứng chỉ sẽ được tải lên khi bấm "Cập nhật"
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex gap-3 pt-4">
@@ -629,39 +669,54 @@ const DoctorProfile = () => {
                 )}
                 {isUploadingCert ? 'Đang cập nhật...' : 'Cập nhật thông tin'}
               </button>
+              
+              {avatarFile && (
+                                  <button
+                    onClick={() => {
+                      setIsUploading(true);
+                      // Upload avatar separately
+                      const formData = new FormData();
+                      formData.append('avatar', avatarFile);
+                      
+                      dispatch(updateDoctorProfile(formData)).then((res) => {
+                        setIsUploading(false);
+                        if (res.meta.requestStatus === 'fulfilled') {
+                          CustomToast('Tải lên ảnh thành công!', 'success');
+                          setAvatarFile(null);
+                          dispatch(getDoctorProfile());
+                        } else {
+                          CustomToast(res.payload?.message || 'Tải lên ảnh thất bại', 'error');
+                        }
+                      });
+                    }}
+                    disabled={isUploading}
+                    className={`flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl transform hover:scale-105 ${
+                      isUploading ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {isUploading ? (
+                      <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      </svg>
+                    )}
+                    {isUploading ? 'Đang tải lên...' : 'Tải lên ảnh'}
+                  </button>
+              )}
             </div>
           </div>
         );
 
       case 'settings':
         return (
-          <div className="tab-content p-6 space-y-4">
-            <h2 className="text-2xl font-bold text-gray-800">Cài đặt</h2>
-            <div className="space-y-4">
-              <div className="bg-white p-4 rounded-lg border shadow-sm">
-                <h3 className="text-lg font-semibold mb-3">Thông báo</h3>
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" defaultChecked />
-                    Thông báo lịch hẹn mới
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" defaultChecked />
-                    Thông báo tin nhắn
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" />
-                    Thông báo email
-                  </label>
-                </div>
-              </div>
-              <div className="bg-white p-4 rounded-lg border shadow-sm">
-                <h3 className="text-lg font-semibold mb-3">Bảo mật</h3>
-                <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-                  Đổi mật khẩu
-                </button>
-              </div>
-            </div>
+          <div className="tab-content p-6">
+            <h2 className="text-2xl font-sm font-semibold text-gray-800">Cài đặt</h2>
+            <p>Chức năng đang phát triển.</p>
           </div>
         );
 
@@ -752,6 +807,59 @@ const DoctorProfile = () => {
           </>
         )}
       </div>
+    </div>
+  );
+};
+
+const Input = ({ label, name, value, onChange, type = 'text', disabled = false, className = '', placeholder }) => {
+  const inputRef = useRef(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    if (inputRef.current && !hasAnimated.current) {
+      gsap.fromTo(
+        inputRef.current,
+        { opacity: 0, x: -10 },
+        { opacity: 1, x: 0, duration: 0.3, ease: 'power2.out' }
+      );
+      hasAnimated.current = true;
+    }
+  }, []);
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <input
+        ref={inputRef}
+        type={type}
+        name={name}
+        value={value || ''}
+        onChange={onChange}
+        disabled={disabled}
+        placeholder={placeholder}
+        className={`mt-1 w-full max-w-lg border border-gray-300 rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 ${className}`}
+      />
+    </div>
+  );
+};
+
+const Activity = ({ title, items }) => {
+  const activityRef = useRef(null);
+
+  useEffect(() => {
+    if (activityRef.current) {
+      gsap.fromTo(
+        activityRef.current,
+        { opacity: 0, x: 20 },
+        { opacity: 1, x: 0, duration: 0.4, ease: 'power2.out' }
+      );
+    }
+  }, []);
+
+  return (
+    <div ref={activityRef}>
+      <h3 className="text-lg font-semibold">{title}</h3>
+      <p>{items?.length ? items.join(', ') : `Chưa có ${title.toLowerCase()}`}</p>
     </div>
   );
 };

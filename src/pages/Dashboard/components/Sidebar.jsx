@@ -14,7 +14,6 @@ const Sidebar = ({ role }) => {
   // Navigation links with icons
   const doctorLinks = [
     { path: '/doctor/dashboard', label: 'Bảng điều khiển', icon: <FaTachometerAlt /> },
-    { path: '/doctor/register', label: 'Đăng ký bác sĩ', icon: <FaUserMd /> },
     { path: '/doctor/form', label: 'Đơn đăng kí của bạn', icon: <FaWpforms /> },
     { path: '/doctor/payment/history', label: 'Lịch sử thanh toán', icon: <FaHistory /> },
     { path: '/doctor/pending', label: 'Yêu cầu đăng kí', icon: <MdOutlinePendingActions /> },

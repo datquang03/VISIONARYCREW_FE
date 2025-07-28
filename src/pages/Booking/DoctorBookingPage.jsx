@@ -22,32 +22,32 @@ const DoctorSchedule = () => {
     dispatch(getMySchedules());
   }, [dispatch]);
 
+  // Time slots theo format HH:mm như trong backend
   const timeSlots = [
-    '09AM - 10AM', '10AM - 11AM', '11AM - 12PM', '12PM - 01PM',
-    '01PM - 02PM', '02PM - 03PM', '03PM - 04PM', '04PM - 05PM'
+    { startTime: '09:00', endTime: '10:00', display: '09:00 - 10:00' },
+    { startTime: '10:00', endTime: '11:00', display: '10:00 - 11:00' },
+    { startTime: '11:00', endTime: '12:00', display: '11:00 - 12:00' },
+    { startTime: '12:00', endTime: '13:00', display: '12:00 - 13:00' },
+    { startTime: '13:00', endTime: '14:00', display: '13:00 - 14:00' },
+    { startTime: '14:00', endTime: '15:00', display: '14:00 - 15:00' },
+    { startTime: '15:00', endTime: '16:00', display: '15:00 - 16:00' },
+    { startTime: '16:00', endTime: '17:00', display: '16:00 - 17:00' }
   ];
 
   const formatDate = (date) => date.toISOString().split('T')[0];
 
-  // So sánh slot đúng theo date, startTime, endTime
-  const isSlotAvailable = (doctorId, date, time) => {
+  // So sánh slot đúng theo date, startTime, endTime với format HH:mm
+  const isSlotAvailable = (doctorId, date, timeSlot) => {
     const dateStr = formatDate(date);
-    const [start, end] = time.split(' - ');
-    // Chuyển về dạng HH:mm
-    const parseTime = (t) => {
-      let [h, m] = t.replace('AM', '').replace('PM', '').trim().split(':');
-      if (!m) m = '00';
-      h = h.padStart(2, '0');
-      return `${h}:${m}`;
-    };
-    const startTime = parseTime(start);
-    const endTime = parseTime(end);
+    const { startTime, endTime } = timeSlot;
+    
     // Check slot quá khứ theo giờ
     const now = new Date();
     const slotDate = new Date(date);
     const [endHour, endMin] = endTime.split(':');
     slotDate.setHours(Number(endHour), Number(endMin), 0, 0);
     if (slotDate < now) return false;
+    
     return mySchedules?.some(slot =>
       slot.date?.slice(0, 10) === dateStr &&
       slot.timeSlot?.startTime === startTime &&
@@ -56,16 +56,12 @@ const DoctorSchedule = () => {
   };
 
   // Hàm kiểm tra slot quá khứ (dùng cho ScheduleTable, check cả giờ)
-  const isPastSlot = (date, time) => {
+  const isPastSlot = (date, timeSlot) => {
     const now = new Date();
     const slotDate = new Date(date);
-    const [start, end] = time.split(' - ');
-    let [endHour, endMin] = end.replace('AM', '').replace('PM', '').trim().split(':');
-    if (!endMin) endMin = '00';
-    endHour = parseInt(endHour);
-    endMin = parseInt(endMin);
-    if (end.includes('PM') && endHour < 12) endHour += 12;
-    slotDate.setHours(endHour, endMin, 0, 0);
+    const { endTime } = timeSlot;
+    const [endHour, endMin] = endTime.split(':');
+    slotDate.setHours(Number(endHour), Number(endMin), 0, 0);
     return slotDate < now;
   };
 

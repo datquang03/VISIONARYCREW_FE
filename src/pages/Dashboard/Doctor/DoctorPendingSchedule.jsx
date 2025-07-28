@@ -95,11 +95,6 @@ const DoctorPendingSchedule = () => {
   };
 
   const getStatusColor = (schedule) => {
-    // Kiểm tra nếu lịch có rejectedReason thì coi như bị từ chối
-    if (schedule.rejectedReason) {
-      return 'bg-red-100 text-red-800 border-red-200';
-    }
-    
     switch (schedule.status) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
@@ -108,18 +103,16 @@ const DoctorPendingSchedule = () => {
       case 'rejected':
         return 'bg-red-100 text-red-800 border-red-200';
       case 'available':
-        return 'bg-red-100 text-red-800 border-red-200'; // Lịch bị từ chối cũng hiển thị màu đỏ
+        // Available mà có rejectedReason thì là "Đã từ chối", không có thì là "Đang chờ"
+        return schedule.rejectedReason 
+          ? 'bg-red-100 text-red-800 border-red-200'
+          : 'bg-blue-100 text-blue-800 border-blue-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const getStatusText = (schedule) => {
-    // Kiểm tra nếu lịch có rejectedReason thì coi như bị từ chối
-    if (schedule.rejectedReason) {
-      return 'Đã từ chối';
-    }
-    
     switch (schedule.status) {
       case 'pending':
         return 'Đang chờ xác nhận';
@@ -128,7 +121,8 @@ const DoctorPendingSchedule = () => {
       case 'rejected':
         return 'Đã từ chối';
       case 'available':
-        return 'Đã từ chối'; // Lịch bị từ chối cũng hiển thị "Đã từ chối"
+        // Available mà có rejectedReason thì là "Đã từ chối", không có thì là "Đang chờ"
+        return schedule.rejectedReason ? 'Đã từ chối' : 'Đang chờ';
       default:
         return 'Không xác định';
     }

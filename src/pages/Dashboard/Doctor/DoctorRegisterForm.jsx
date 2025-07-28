@@ -272,92 +272,101 @@ const DoctorRegisterForm = () => {
         {doctorDetail && doctorDetail.doctor && !showDetail && (
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
             {/* Status Header */}
-            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4">
+            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-4 sm:px-6 py-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {doctorDetail.doctor.avatar ? (
+                      <img 
+                        src={doctorDetail.doctor.avatar} 
+                        alt={doctorDetail.doctor.fullName || 'Avatar'} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    )}
                   </div>
-                  <div>
-                    <h2 className="text-white font-semibold text-lg">{doctorDetail.doctor.fullName}</h2>
-                    <p className="text-blue-100 text-sm">{doctorDetail.doctor.email}</p>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-white font-semibold text-base sm:text-lg truncate">{doctorDetail.doctor.fullName}</h2>
+                    <p className="text-blue-100 text-xs sm:text-sm truncate">{doctorDetail.doctor.email}</p>
                   </div>
                 </div>
-                <span className={`px-4 py-2 rounded-full text-sm font-semibold ${statusColor[doctorDetail.doctor.status] || 'text-yellow-700 bg-yellow-100'}`}>
+                <span className={`px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs font-semibold flex-shrink-0 ${statusColor[doctorDetail.doctor.status] || 'text-yellow-700 bg-yellow-100'}`}>
                   {doctorDetail.doctor.status === 'accepted' ? 'Đã chấp nhận' : doctorDetail.doctor.status === 'pending' ? 'Đang chờ duyệt' : 'Bị từ chối'}
                 </span>
               </div>
             </div>
 
             {/* Info Grid */}
-            <div className="p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <div className="p-4 sm:p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                     </div>
                     <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Họ tên</span>
                   </div>
-                  <p className="text-gray-900 font-medium">{doctorDetail.doctor.fullName}</p>
+                  <p className="text-gray-900 font-medium text-sm sm:text-base break-words">{doctorDetail.doctor.fullName}</p>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                     </div>
                     <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</span>
                   </div>
-                  <p className="text-gray-900 font-medium">{doctorDetail.doctor.email}</p>
+                  <p className="text-gray-900 font-medium text-sm sm:text-base break-all">{doctorDetail.doctor.email}</p>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                       </svg>
                     </div>
                     <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Chuyên khoa</span>
                   </div>
-                  <p className="text-gray-900 font-medium">{doctorDetail.doctor.doctorType}</p>
+                  <p className="text-gray-900 font-medium text-sm sm:text-base break-words">{doctorDetail.doctor.doctorType}</p>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
                     <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Trạng thái</span>
                   </div>
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${statusColor[doctorDetail.doctor.status] || 'text-yellow-700 bg-yellow-100'}`}>
+                  <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${statusColor[doctorDetail.doctor.status] || 'text-yellow-700 bg-yellow-100'}`}>
                     {doctorDetail.doctor.status === 'accepted' ? 'Đã chấp nhận' : doctorDetail.doctor.status === 'pending' ? 'Đang chờ duyệt' : 'Bị từ chối'}
                   </span>
                 </div>
               </div>
 
               {/* Action Button */}
-              <div className="mt-8 text-center">
+              <div className="mt-6 sm:mt-8 text-center px-4 sm:px-0">
                 <button
-                  className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-indigo-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-indigo-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base w-full sm:w-auto"
                   onClick={() => setShowDetail(true)}
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
-                  Xem chi tiết và chỉnh sửa
+                  <span className="hidden sm:inline">Xem chi tiết và chỉnh sửa</span>
+                  <span className="sm:hidden">Xem chi tiết</span>
                 </button>
-                <p className="text-xs text-gray-500 mt-3">* Bấm vào để xem chi tiết và chỉnh sửa</p>
+                <p className="text-xs text-gray-500 mt-2 sm:mt-3">* Bấm vào để xem chi tiết và chỉnh sửa</p>
               </div>
             </div>
           </div>

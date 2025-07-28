@@ -29,7 +29,7 @@ const UserProfile = () => {
         username: user.username || '',
         email: user.email || '',
         phone: user.phone || '',
-        dateOfBirth: user.dateOfBirth?.slice(0, 10) || '',
+        dateOfBirth: user.dateOfBirth ? user.dateOfBirth.split('T')[0] : '',
       });
     }
   }, [user]);
@@ -39,6 +39,18 @@ const UserProfile = () => {
   };
 
   const handleUpdate = () => {
+    // Check if there are actual changes
+    const hasChanges = Object.keys(formData).some(key => {
+      const currentValue = formData[key];
+      const originalValue = user[key];
+      return currentValue !== originalValue;
+    });
+
+    if (!hasChanges) {
+      CustomToast('Không có thay đổi nào để cập nhật!', 'info');
+      return;
+    }
+
     dispatch(updateUserProfile(formData)).then((res) => {
       if (res.meta.requestStatus === 'fulfilled') {
         CustomToast('Cập nhật thành công!', 'success');
@@ -75,9 +87,12 @@ const UserProfile = () => {
               onClick={handleUpdate}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg"
+              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl"
             >
-              Cập nhật
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+              </svg>
+              Cập nhật thông tin
             </motion.button>
           </motion.div>
         );

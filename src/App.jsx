@@ -34,6 +34,8 @@ import DoctorPaymentSuccess from "./pages/Package/DoctorPaymentSuccess";
 import DoctorPaymentHistory from "./pages/Dashboard/Doctor/DoctorPaymentHistory";
 import DoctorPaymentFail from "./pages/Package/DoctorPaymentFail";
 import DoctorPendingSchedule from "./pages/Dashboard/Doctor/DoctorPendingSchedule";
+import AIChatBubble from "./components/AIChatBubble/AIChatBubble";
+
 
 const App = () => {
   const dispatch = useDispatch();
@@ -50,6 +52,7 @@ const App = () => {
     <BrowserRouter>
       <SidebarProvider>
         <ToastContainer />
+        <AIChatBubble />
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<Homepage />} />
@@ -59,6 +62,7 @@ const App = () => {
           <Route path="/register/user" element={<UserRegister />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/register/doctor" element={<DoctorRegister />} />
+
 
           {/* User protected routes */}
           <Route element={<AdminAndUserProtectedRouter />}>

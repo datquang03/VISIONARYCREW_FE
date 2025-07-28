@@ -1,11 +1,11 @@
 // components/DoctorScheduleTable.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ConfirmModal } from '../../../components/modal/ConfirmModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { createSchedule, getMySchedules, updateSchedule, deleteSchedule, rejectRegisterSchedule } from '../../../redux/APIs/slices/scheduleSlice';
 import { CustomToast } from '../../../components/Toast/CustomToast';
-import UserScheduleDetailModal from '../../../components/modal/UserScheduleDetailModal';
+import DoctorScheduleDetailModal from '../../../components/modal/DoctorScheduleDetailModal';
 
 const DoctorScheduleTable = ({
   currentUser,
@@ -21,6 +21,16 @@ const DoctorScheduleTable = ({
   const [detailModal, setDetailModal] = useState(null);
   const dispatch = useDispatch();
   const { loading, mySchedules = [] } = useSelector(state => state.scheduleSlice);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Realtime update để disable slot quá khứ
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Update mỗi phút
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Định dạng ngày về yyyy-mm-dd
   const formatDate = (date) => {
@@ -29,19 +39,11 @@ const DoctorScheduleTable = ({
     return date.toISOString().split('T')[0];
   };
 
-  const handleSlotClick = (day, time) => {
+  const handleSlotClick = (day, timeSlot) => {
     // Tìm slot đã đặt nếu có
     const slot = (Array.isArray(mySchedules) ? mySchedules : []).find(slot => {
       const dateStr = formatDate(day);
-      const [start, end] = time.split(' - ');
-      const parseTime = (t) => {
-        let [h, m] = t.replace('AM', '').replace('PM', '').trim().split(':');
-        if (!m) m = '00';
-        h = h.padStart(2, '0');
-        return `${h}:${m}`;
-      };
-      const startTime = parseTime(start);
-      const endTime = parseTime(end);
+      const { startTime, endTime } = timeSlot;
       return slot.date?.slice(0, 10) === dateStr &&
         slot.timeSlot?.startTime === startTime &&
         slot.timeSlot?.endTime === endTime;
@@ -57,15 +59,16 @@ const DoctorScheduleTable = ({
     if (slotStatus === 'booked') {
       setDetailModal({ ...slot, slotType: 'booked-by-user' });
     } else if (slotStatus === 'created') {
-      setConfirmData({ day, time, slot }); // cho phép update/delete
+      setConfirmData({ day, timeSlot, slot }); // cho phép update/delete
     } else {
-      setConfirmData({ day, time }); // slot mới
+      setConfirmData({ day, timeSlot }); // slot mới
     }
   };
 
   // Xử lý tạo mới, cập nhật, xóa lịch
   const handleConfirm = async (scheduleData, mode = 'create', scheduleId = null) => {
     try {
+
       if (mode === 'update' && scheduleId) {
         await dispatch(updateSchedule({ scheduleId, updates: scheduleData })).unwrap();
         CustomToast({ message: 'Cập nhật lịch thành công!', type: 'success' });
@@ -95,26 +98,14 @@ const DoctorScheduleTable = ({
     </span>
   );
 
-  // Hàm kiểm tra slot thuộc quá khứ
-  const isPastSlot = (date, time) => {
-    const now = new Date();
+  // Hàm kiểm tra slot thuộc quá khứ (realtime)
+  const isPastSlot = (date, timeSlot) => {
     const slotDate = new Date(date);
-    // Nếu ngày nhỏ hơn hôm nay => quá khứ
-    if (slotDate.setHours(0,0,0,0) < now.setHours(0,0,0,0)) return true;
-    // Nếu là hôm nay, kiểm tra giờ kết thúc
-    if (slotDate.setHours(0,0,0,0) === now.setHours(0,0,0,0)) {
-      const [start, end] = time.split(' - ');
-      let [endHour, endMin] = end.replace('AM', '').replace('PM', '').trim().split(':');
-      if (!endMin) endMin = '00';
-      endHour = parseInt(endHour);
-      endMin = parseInt(endMin);
-      // Nếu là PM và < 12h thì cộng 12h
-      if (end.includes('PM') && endHour < 12) endHour += 12;
-      const slotEnd = new Date(slotDate);
-      slotEnd.setHours(endHour, endMin, 0, 0);
-      return slotEnd < now;
-    }
-    return false;
+    const { endTime } = timeSlot;
+    const [endHour, endMin] = endTime.split(':');
+    const slotEnd = new Date(slotDate);
+    slotEnd.setHours(Number(endHour), Number(endMin), 0, 0);
+    return slotEnd <= currentTime;
   };
 
   const handleRejectBooking = async (scheduleId, rejectedReason) => {
@@ -143,26 +134,18 @@ const DoctorScheduleTable = ({
 
         {/* Mobile Table (Stacked) */}
         <div className="md:hidden divide-y divide-gray-200 overflow-x-auto">
-          {timeSlots.map((time, rowIdx) => (
+          {timeSlots.map((timeSlot, rowIdx) => (
             <div key={rowIdx} className="p-2">
-              <div className="font-semibold text-gray-800 mb-2 text-xs">{time}</div>
+              <div className="font-semibold text-gray-800 mb-2 text-xs">{timeSlot.display}</div>
               <div className="grid grid-cols-4 gap-2 text-sm">
-                {days.map((day, i) => {
-                  const slot = (Array.isArray(mySchedules) ? mySchedules : []).find(slot => {
-                    const dateStr = formatDate(day);
-                    const [start, end] = time.split(' - ');
-                    const parseTime = (t) => {
-                      let [h, m] = t.replace('AM', '').replace('PM', '').trim().split(':');
-                      if (!m) m = '00';
-                      h = h.padStart(2, '0');
-                      return `${h}:${m}`;
-                    };
-                    const startTime = parseTime(start);
-                    const endTime = parseTime(end);
-                    return slot.date?.slice(0, 10) === dateStr &&
-                      slot.timeSlot?.startTime === startTime &&
-                      slot.timeSlot?.endTime === endTime;
-                  });
+                                  {days.map((day, i) => {
+                    const slot = (Array.isArray(mySchedules) ? mySchedules : []).find(slot => {
+                      const dateStr = formatDate(day);
+                      const { startTime, endTime } = timeSlot;
+                      return slot.date?.slice(0, 10) === dateStr &&
+                        slot.timeSlot?.startTime === startTime &&
+                        slot.timeSlot?.endTime === endTime;
+                    });
                   let slotStatus = '';
                   if (slot) {
                     if (slot.patient) {
@@ -173,28 +156,28 @@ const DoctorScheduleTable = ({
                   }
                   const isAvailable = !!slot;
                   const isToday = day.toDateString() === todayStr;
-                  return (
-                    <div
-                      key={i}
-                      onClick={() => {
-                        if (!isPastSlot(day, time)) handleSlotClick(day, time);
-                      }}
-                      className={`rounded-lg text-center border transition duration-300 flex flex-col items-center justify-center min-h-[48px] min-w-[48px] max-w-[60px] max-h-[60px] mx-auto p-1
-                        ${isPastSlot(day, time) ? 'bg-gray-200 cursor-not-allowed' : 'cursor-pointer'}
-                        ${isToday ? 'ring-2 ring-green-400' : ''}
-                        ${slotStatus === 'booked' ? 'bg-yellow-400 text-white font-bold' : ''}
-                        ${slotStatus === 'created' ? 'bg-blue-400 text-white font-bold' : ''}`}
-                    >
-                      <div className="font-bold text-xs">{day.getDay() === 0 ? 'CN' : `T${day.getDay() + 1}`}</div>
-                      <div className="text-[10px]">{`${day.getDate()}/${day.getMonth() + 1}`}</div>
-                      <div className="mt-1 flex items-center justify-center">
-                        {slotStatus === 'booked' && <span>đã đặt</span>}
-                        {slotStatus === 'created' && <span>chờ đặt</span>}
-                        {!slot && !isPastSlot(day, time) && <span className="text-xl text-green-500 font-bold">+</span>}
-                        {isPastSlot(day, time) && <span className="text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M18.364 5.636l-12.728 12.728M5.636 5.636l12.728 12.728" /></svg></span>}
+                                                          return (
+                      <div
+                        key={i}
+                        onClick={() => {
+                          if (!isPastSlot(day, timeSlot)) handleSlotClick(day, timeSlot);
+                        }}
+                        className={`rounded-lg text-center border transition duration-300 flex flex-col items-center justify-center min-h-[48px] min-w-[48px] max-w-[60px] max-h-[60px] mx-auto p-1
+                          ${isPastSlot(day, timeSlot) ? 'bg-gray-300 cursor-not-allowed opacity-60' : 'cursor-pointer'}
+                          ${isToday ? 'ring-2 ring-green-400' : ''}
+                          ${slotStatus === 'booked' ? 'bg-yellow-400 text-white font-bold' : ''}
+                          ${slotStatus === 'created' ? 'bg-blue-400 text-white font-bold' : ''}`}
+                      >
+                        <div className="font-bold text-xs">{day.getDay() === 0 ? 'CN' : `T${day.getDay() + 1}`}</div>
+                        <div className="text-[10px]">{`${day.getDate()}/${day.getMonth() + 1}`}</div>
+                        <div className="mt-1 flex items-center justify-center">
+                          {slotStatus === 'booked' && <span>đã đặt</span>}
+                          {slotStatus === 'created' && <span>chờ đặt</span>}
+                          {!slot && !isPastSlot(day, timeSlot) && <span className="text-xl text-green-500 font-bold">+</span>}
+                          {isPastSlot(day, timeSlot) && <span className="text-gray-500 text-xs">Đã qua</span>}
+                        </div>
                       </div>
-                    </div>
-                  );
+                    );
                 })}
               </div>
             </div>
@@ -219,21 +202,13 @@ const DoctorScheduleTable = ({
               </tr>
             </thead>
             <tbody>
-              {timeSlots.map((time, rowIdx) => (
+              {timeSlots.map((timeSlot, rowIdx) => (
                 <tr key={rowIdx}>
-                  <td className="border p-1 md:p-2 font-medium text-gray-700 bg-gray-50 w-[90px] md:w-[120px] text-xs md:text-base">{time}</td>
+                  <td className="border p-1 md:p-2 font-medium text-gray-700 bg-gray-50 w-[90px] md:w-[120px] text-xs md:text-base">{timeSlot.display}</td>
                   {days.map((day, colIdx) => {
                     const slot = (Array.isArray(mySchedules) ? mySchedules : []).find(slot => {
                       const dateStr = formatDate(day);
-                      const [start, end] = time.split(' - ');
-                      const parseTime = (t) => {
-                        let [h, m] = t.replace('AM', '').replace('PM', '').trim().split(':');
-                        if (!m) m = '00';
-                        h = h.padStart(2, '0');
-                        return `${h}:${m}`;
-                      };
-                      const startTime = parseTime(start);
-                      const endTime = parseTime(end);
+                      const { startTime, endTime } = timeSlot;
                       return slot.date?.slice(0, 10) === dateStr &&
                         slot.timeSlot?.startTime === startTime &&
                         slot.timeSlot?.endTime === endTime;
@@ -253,19 +228,19 @@ const DoctorScheduleTable = ({
                         key={colIdx}
                         className={`border transition duration-300 align-middle
                           w-[80px] h-[60px] md:w-[120px] md:h-[100px] p-0
-                          ${isPastSlot(day, time) ? 'bg-gray-200 cursor-not-allowed' : 'cursor-pointer'}
+                          ${isPastSlot(day, timeSlot) ? 'bg-gray-300 cursor-not-allowed opacity-60' : 'cursor-pointer'}
                           ${isToday ? 'bg-green-50 border-l-2 border-green-400' : ''}
                           ${slotStatus === 'booked' ? 'bg-yellow-400 text-white font-bold' : ''}
                           ${slotStatus === 'created' ? 'bg-blue-400 text-white font-bold' : ''}`}
                         onClick={() => {
-                          if (!isPastSlot(day, time)) handleSlotClick(day, time);
+                          if (!isPastSlot(day, timeSlot)) handleSlotClick(day, timeSlot);
                         }}
                       >
                         <div className="flex items-center justify-center h-full w-full min-h-[60px] min-w-[80px] md:min-h-[100px] md:min-w-[120px]">
                           {slotStatus === 'booked' && <span>đã đặt</span>}
                           {slotStatus === 'created' && <span>chờ đặt</span>}
-                          {!slot && !isPastSlot(day, time) && <span className="text-2xl text-green-500 font-bold">+</span>}
-                          {isPastSlot(day, time) && <span className="text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M18.364 5.636l-12.728 12.728M5.636 5.636l12.728 12.728" /></svg></span>}
+                          {!slot && !isPastSlot(day, timeSlot) && <span className="text-2xl text-green-500 font-bold">+</span>}
+                          {isPastSlot(day, timeSlot) && <span className="text-gray-500 text-sm">Đã qua</span>}
                         </div>
                       </td>
                     );
@@ -289,7 +264,7 @@ const DoctorScheduleTable = ({
           }}
           onDelete={confirmData.slot ? () => handleConfirm({}, 'delete', confirmData.slot._id) : undefined}
           onCancel={handleCancel}
-          time={confirmData.time}
+          time={confirmData.timeSlot?.display || ''}
           date={confirmData.day}
           defaultValues={confirmData.slot ? {
             appointmentType: confirmData.slot.appointmentType,
@@ -301,10 +276,9 @@ const DoctorScheduleTable = ({
 
       {/* Modal chi tiết lịch đã đặt */}
       {detailModal && (
-        <UserScheduleDetailModal
+        <DoctorScheduleDetailModal
           slot={detailModal}
           onClose={() => setDetailModal(null)}
-          onRejectBooking={handleRejectBooking}
         />
       )}
     </>

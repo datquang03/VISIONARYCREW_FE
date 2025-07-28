@@ -18,7 +18,7 @@ const getUserInfo = (state) => {
 
 const ProtectedRouter = () => {
   const userInfo = useSelector((state) => getUserInfo(state));
-  const isAuthenticated = useMemo(() => !!userInfo?.token, [userInfo?.token]);
+  const isAuthenticated = useMemo(() => !!userInfo, [userInfo]);
   const hasShownToast = useRef(false);
   
   useEffect(() => {
@@ -202,6 +202,8 @@ const AdminAndUserProtectedRouter = () => {
   
   return <Outlet />;
 };
+
+
 
 export {
   ProtectedRouter,

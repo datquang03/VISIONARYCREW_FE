@@ -12,6 +12,7 @@ import { ConfirmModal } from '../../components/modal/ConfirmModal';
 import { CustomToast } from '../../components/Toast/CustomToast';
 import UserScheduleDetailModal from '../../components/modal/UserScheduleDetailModal';
 
+
 const HealthcareBookingSystem = () => {
   // const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -30,16 +31,28 @@ const HealthcareBookingSystem = () => {
   const [availableSlots, setAvailableSlots] = useState([]);
   const [slotDetail, setSlotDetail] = useState(null);
 
+
+  // Time slots theo format HH:mm như trong backend
   const timeSlots = [
-    '09AM - 10AM', '10AM - 11AM', '11AM - 12PM', '12PM - 01PM',
-    '01PM - 02PM', '02PM - 03PM', '03PM - 04PM', '04PM - 05PM'
+    { startTime: '09:00', endTime: '10:00', display: '09:00 - 10:00' },
+    { startTime: '10:00', endTime: '11:00', display: '10:00 - 11:00' },
+    { startTime: '11:00', endTime: '12:00', display: '11:00 - 12:00' },
+    { startTime: '12:00', endTime: '13:00', display: '12:00 - 13:00' },
+    { startTime: '13:00', endTime: '14:00', display: '13:00 - 14:00' },
+    { startTime: '14:00', endTime: '15:00', display: '14:00 - 15:00' },
+    { startTime: '15:00', endTime: '16:00', display: '15:00 - 16:00' },
+    { startTime: '16:00', endTime: '17:00', display: '16:00 - 17:00' }
   ];
 
   const formatDate = (date) => date.toISOString().split('T')[0];
 
   const getDaysOfWeek = () => {
+    // Đảm bảo tuần bắt đầu từ Thứ 2 (Monday)
     const startOfWeek = new Date(selectedDate);
-    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
+    const dayOfWeek = startOfWeek.getDay();
+    // Nếu là Chủ nhật (0), lùi về thứ 2 tuần trước
+    const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    startOfWeek.setDate(startOfWeek.getDate() + diffToMonday);
     return Array.from({ length: 7 }, (_, i) => {
       const day = new Date(startOfWeek);
       day.setDate(startOfWeek.getDate() + i);
@@ -47,35 +60,36 @@ const HealthcareBookingSystem = () => {
     });
   };
 
-  const isSlotAvailable = (doctorId, date, time) => {
+  const isSlotAvailable = (doctorId, date, timeSlot) => {
     const dateStr = formatDate(date);
     return availableSlots.some(slot =>
-      slot.doctorId === doctorId && slot.date === dateStr && slot.time === time
+      slot.doctorId === doctorId && slot.date === dateStr && 
+      slot.time === timeSlot.display
     );
   };
 
-  const isSlotBooked = (doctorId, date, time) => {
+  const isSlotBooked = (doctorId, date, timeSlot) => {
     const dateStr = formatDate(date);
     return appointments.some(app =>
-      app.doctorId === doctorId && app.date === dateStr && app.time === time
+      app.doctorId === doctorId && app.date === dateStr && app.time === timeSlot.display
     );
   };
 
-  const handleCreateAvailableSlot = (doctorId, date, time) => {
+  const handleCreateAvailableSlot = (doctorId, date, timeSlot) => {
     const dateStr = formatDate(date);
     const isConflict = availableSlots.some(slot =>
-      slot.doctorId !== doctorId && slot.date === dateStr && slot.time === time
+      slot.doctorId !== doctorId && slot.date === dateStr && slot.time === timeSlot.display
     );
     if (isConflict) {
       alert('Thời gian này đã có bác sĩ khác đăng ký!');
       return;
     }
     setAvailableSlots(prev => [...prev, {
-      id: Date.now(), doctorId, date: dateStr, time
+      id: Date.now(), doctorId, date: dateStr, time: timeSlot.display
     }]);
   };
 
-  const handleBookAppointment = (doctorId, date, time) => {
+  const handleBookAppointment = (doctorId, date, timeSlot) => {
     const dateStr = formatDate(date);
     setAppointments(prev => [...prev, {
       id: Date.now(),
@@ -83,28 +97,20 @@ const HealthcareBookingSystem = () => {
       patientId: currentUser.id,
       patientName: currentUser.name,
       date: dateStr,
-      time,
+      time: timeSlot.display,
       status: 'pending'
     }]);
   };
 
-  const handleSlotClick = (doctorId, date, time) => {
+  const handleSlotClick = (doctorId, date, timeSlot) => {
     if (currentUser.role === 'doctor' && currentUser.id === doctorId) {
-      if (!isSlotAvailable(doctorId, date, time) && !isSlotBooked(doctorId, date, time)) {
-        handleCreateAvailableSlot(doctorId, date, time);
+      if (!isSlotAvailable(doctorId, date, timeSlot) && !isSlotBooked(doctorId, date, timeSlot)) {
+        handleCreateAvailableSlot(doctorId, date, timeSlot);
       }
     } else if (currentUser.role === 'user') {
       // Kiểm tra xem slot có phải do user hiện tại đăng ký không
       const dateStr = formatDate(date);
-      const [start, end] = time.split(' - ');
-      const parseTime = (t) => {
-        let [h, m] = t.replace('AM', '').replace('PM', '').trim().split(':');
-        if (!m) m = '00';
-        h = h.padStart(2, '0');
-        return `${h}:${m}`;
-      };
-      const startTime = parseTime(start);
-      const endTime = parseTime(end);
+      const { startTime, endTime } = timeSlot;
       
       const foundSlot = doctorSchedules.find(slot =>
         slot.date?.slice(0, 10) === dateStr &&
@@ -117,7 +123,7 @@ const HealthcareBookingSystem = () => {
         setSlotDetail(foundSlot);
       } else if (foundSlot && !foundSlot.patient) {
         // Nếu slot còn trống, đăng ký
-        handleBookAppointment(doctorId, date, time);
+        handleBookAppointment(doctorId, date, timeSlot);
       }
     }
   };
@@ -170,19 +176,7 @@ const HealthcareBookingSystem = () => {
     }
   };
 
-  // Hàm kiểm tra slot quá khứ (check cả giờ)
-  const isPastSlot = (date, time) => {
-    const now = new Date();
-    const slotDate = new Date(date);
-    const [, end] = time.split(' - ');
-    let [endHour, endMin] = end.replace('AM', '').replace('PM', '').trim().split(':');
-    if (!endMin) endMin = '00';
-    endHour = parseInt(endHour);
-    endMin = parseInt(endMin);
-    if (end.includes('PM') && endHour < 12) endHour += 12;
-    slotDate.setHours(endHour, endMin, 0, 0);
-    return slotDate < now;
-  };
+
 
   useEffect(() => {
     dispatch(getDoctors());
@@ -215,8 +209,11 @@ const HealthcareBookingSystem = () => {
         />
 
         {selectedDoctor && (
-          <div className="font-bold text-lg mb-2 mt-6 border border-green-400 bg-green-50 rounded-lg px-4 py-2 inline-block shadow">
-            Lịch của bác sĩ {selectedDoctor.fullName || selectedDoctor.name || selectedDoctor.username}
+          <div className="flex items-center justify-between mb-2 mt-6">
+            <div className="font-bold text-lg border border-green-400 bg-green-50 rounded-lg px-4 py-2 inline-block shadow">
+              Lịch của bác sĩ {selectedDoctor.fullName || selectedDoctor.name || selectedDoctor.username}
+            </div>
+
           </div>
         )}
 
@@ -226,18 +223,10 @@ const HealthcareBookingSystem = () => {
           selectedDate={selectedDate}
           timeSlots={timeSlots}
           getDaysOfWeek={getDaysOfWeek}
-          getSlotStatus={(doctorId, date, time) => {
+          getSlotStatus={(doctorId, date, timeSlot) => {
             if (Array.isArray(doctorSchedules)) {
               const dateStr = formatDate(date);
-              const [start, end] = time.split(' - ');
-              const parseTime = (t) => {
-                let [h, m] = t.replace('AM', '').replace('PM', '').trim().split(':');
-                if (!m) m = '00';
-                h = h.padStart(2, '0');
-                return `${h}:${m}`;
-              };
-              const startTime = parseTime(start);
-              const endTime = parseTime(end);
+              const { startTime, endTime } = timeSlot;
               const found = doctorSchedules.find(slot =>
                 slot.date?.slice(0, 10) === dateStr &&
                 slot.timeSlot?.startTime === startTime &&
@@ -257,7 +246,6 @@ const HealthcareBookingSystem = () => {
             }
             return 'empty';
           }}
-          isPastSlot={isPastSlot}
           handleSlotClick={handleSlotClick}
           onSlotDetail={handleSlotDetail}
           doctorSchedules={doctorSchedules}
@@ -274,6 +262,8 @@ const HealthcareBookingSystem = () => {
             notificationCreateLoading={notificationCreateLoading}
           />
         )}
+        
+
       </div>
     </DefaultLayout>
   );

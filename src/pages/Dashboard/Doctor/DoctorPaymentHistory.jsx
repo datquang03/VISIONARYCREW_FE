@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { getDoctorPaymentHistory } from '../../../redux/APIs/slices/paymentSlice';
 import { FaCheckCircle, FaHourglassHalf, FaTimesCircle, FaBan } from 'react-icons/fa';
 
@@ -28,7 +29,8 @@ const statusMap = {
 
 const DoctorPaymentHistory = () => {
   const dispatch = useDispatch();
-  const { payments, isLoading, isError, message } = useSelector(state => state.paymentSlice);
+  const navigate = useNavigate();
+  const { payments, isLoading, isError } = useSelector(state => state.paymentSlice);
 
   useEffect(() => {
     dispatch(getDoctorPaymentHistory());
@@ -42,9 +44,103 @@ const DoctorPaymentHistory = () => {
       </h2>
 
       {isLoading && <p className="text-lg text-blue-500 animate-pulse">Đang tải dữ liệu...</p>}
-      {isError && <p className="text-red-500">Lỗi: {message}</p>}
+      
+      {/* Error notification for unverified account */}
+      {isError && (
+        <div className="mb-6">
+          <div className="bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 rounded-lg p-6 shadow-lg animate-fade-in">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-8 w-8 text-red-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <h3 className="text-lg font-semibold text-red-800 mb-2">
+                  ⚠️ Tài khoản chưa được xác minh
+                </h3>
+                                 <div className="text-red-700">
+                   <div className="bg-white rounded-lg p-4 mt-3 border border-red-200">
+                     <h4 className="font-semibold text-red-800 mb-2">📋 Để được xác minh:</h4>
+                     <ul className="text-sm text-red-700 space-y-1">
+                       <li className="flex items-center gap-2">
+                         <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                         Hoàn thành đăng ký thông tin bác sĩ
+                       </li>
+                       <li className="flex items-center gap-2">
+                         <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                         Upload đầy đủ chứng chỉ hành nghề
+                       </li>
+                       <li className="flex items-center gap-2">
+                         <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                         Chờ admin xét duyệt (thường 1-2 ngày làm việc)
+                       </li>
+                     </ul>
+                   </div>
+                   <div className="mt-4">
+                     <button 
+                       onClick={() => navigate('/doctor/form')}
+                       className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2 mx-auto"
+                     >
+                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                       </svg>
+                       Xem trạng thái
+                     </button>
+                   </div>
+                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {!isLoading && !isError && payments && payments.length === 0 && (
-        <p className="text-gray-500 italic">Chưa có giao dịch nào.</p>
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-dashed border-blue-200 rounded-2xl p-8 max-w-md w-full text-center animate-fade-in">
+            <div className="mb-6">
+              <svg className="w-16 h-16 text-blue-400 mx-auto animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-blue-800 mb-3">
+              📋 Chưa có giao dịch nào
+            </h3>
+            <p className="text-blue-600 mb-6 leading-relaxed">
+              Hiện tại bạn chưa có lịch sử thanh toán nào trong hệ thống. 
+              Các giao dịch sẽ xuất hiện ở đây sau khi bạn thực hiện thanh toán.
+            </p>
+            <div className="bg-white rounded-lg p-4 border border-blue-200">
+              <h4 className="font-semibold text-blue-800 mb-3">💡 Khi nào sẽ có giao dịch?</h4>
+              <ul className="text-sm text-blue-700 space-y-2 text-left">
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                  Nâng cấp gói subscription
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                  Thanh toán dịch vụ premium
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                  Mua các tính năng bổ sung
+                </li>
+              </ul>
+            </div>
+            <div className="mt-6">
+              <button 
+                onClick={() => navigate('/doctor/packages')}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 mx-auto shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Xem gói dịch vụ
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {!isLoading && !isError && payments && payments.length > 0 && (
