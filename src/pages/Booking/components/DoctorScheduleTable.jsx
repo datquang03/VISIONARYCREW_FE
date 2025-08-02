@@ -56,6 +56,12 @@ const DoctorScheduleTable = ({
         slotStatus = 'created';
       }
     }
+    
+    // Cho phép click nếu có slot (dù ở quá khứ) hoặc slot mới không ở quá khứ
+    const canClick = slot || !isPastSlot(day, timeSlot);
+    
+    if (!canClick) return;
+    
     if (slotStatus === 'booked') {
       setDetailModal({ ...slot, slotType: 'booked-by-user' });
     } else if (slotStatus === 'created') {
@@ -159,11 +165,9 @@ const DoctorScheduleTable = ({
                                                           return (
                       <div
                         key={i}
-                        onClick={() => {
-                          if (!isPastSlot(day, timeSlot)) handleSlotClick(day, timeSlot);
-                        }}
+                        onClick={() => handleSlotClick(day, timeSlot)}
                         className={`rounded-lg text-center border transition duration-300 flex flex-col items-center justify-center min-h-[48px] min-w-[48px] max-w-[60px] max-h-[60px] mx-auto p-1
-                          ${isPastSlot(day, timeSlot) ? 'bg-gray-300 cursor-not-allowed opacity-60' : 'cursor-pointer'}
+                          ${isPastSlot(day, timeSlot) && !slot ? 'bg-gray-300 cursor-not-allowed opacity-60' : 'cursor-pointer'}
                           ${isToday ? 'ring-2 ring-green-400' : ''}
                           ${slotStatus === 'booked' ? 'bg-yellow-400 text-white font-bold' : ''}
                           ${slotStatus === 'created' ? 'bg-blue-400 text-white font-bold' : ''}`}
@@ -174,7 +178,7 @@ const DoctorScheduleTable = ({
                           {slotStatus === 'booked' && <span>đã đặt</span>}
                           {slotStatus === 'created' && <span>chờ đặt</span>}
                           {!slot && !isPastSlot(day, timeSlot) && <span className="text-xl text-green-500 font-bold">+</span>}
-                          {isPastSlot(day, timeSlot) && <span className="text-gray-500 text-xs">Đã qua</span>}
+                          {isPastSlot(day, timeSlot) && !slot && <span className="text-gray-500 text-xs">Đã qua</span>}
                         </div>
                       </div>
                     );
@@ -228,19 +232,17 @@ const DoctorScheduleTable = ({
                         key={colIdx}
                         className={`border transition duration-300 align-middle
                           w-[80px] h-[60px] md:w-[120px] md:h-[100px] p-0
-                          ${isPastSlot(day, timeSlot) ? 'bg-gray-300 cursor-not-allowed opacity-60' : 'cursor-pointer'}
+                          ${isPastSlot(day, timeSlot) && !slot ? 'bg-gray-300 cursor-not-allowed opacity-60' : 'cursor-pointer'}
                           ${isToday ? 'bg-green-50 border-l-2 border-green-400' : ''}
                           ${slotStatus === 'booked' ? 'bg-yellow-400 text-white font-bold' : ''}
                           ${slotStatus === 'created' ? 'bg-blue-400 text-white font-bold' : ''}`}
-                        onClick={() => {
-                          if (!isPastSlot(day, timeSlot)) handleSlotClick(day, timeSlot);
-                        }}
+                        onClick={() => handleSlotClick(day, timeSlot)}
                       >
                         <div className="flex items-center justify-center h-full w-full min-h-[60px] min-w-[80px] md:min-h-[100px] md:min-w-[120px]">
                           {slotStatus === 'booked' && <span>đã đặt</span>}
                           {slotStatus === 'created' && <span>chờ đặt</span>}
                           {!slot && !isPastSlot(day, timeSlot) && <span className="text-2xl text-green-500 font-bold">+</span>}
-                          {isPastSlot(day, timeSlot) && <span className="text-gray-500 text-sm">Đã qua</span>}
+                          {isPastSlot(day, timeSlot) && !slot && <span className="text-gray-500 text-sm">Đã qua</span>}
                         </div>
                       </td>
                     );
