@@ -154,6 +154,49 @@ const DoctorLogin = () => {
                   "Đăng nhập"
                 )}
               </motion.button>
+
+              {/* Registration section */}
+              <div className="text-center space-y-4">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">hoặc</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <p className="text-gray-600 text-sm">
+                    Bạn chưa có tài khoản? 
+                  </p>
+                  <motion.button
+                    type="button"
+                    whileHover={{ 
+                      scale: 1.02,
+                      boxShadow: "0 10px 25px rgba(34, 197, 94, 0.3)"
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate("/register/doctor")}
+                    className="w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center justify-center bg-gradient-to-r from-green-400 to-emerald-500 text-white hover:from-green-500 hover:to-emerald-600 cursor-pointer border-2 border-transparent hover:border-green-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                  >
+                    <svg 
+                      className="w-4 h-4 mr-2" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6" 
+                      />
+                    </svg>
+                    Xin hãy bấm vào đây để đăng ký
+                  </motion.button>
+                </div>
+              </div>
             </form>
           </div>
 

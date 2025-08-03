@@ -38,6 +38,11 @@ export const CustomToast = ({ message, type = 'info' }) => {
   }
 };
 
+// Add convenience methods
+CustomToast.success = (message) => CustomToast({ message, type: 'success' });
+CustomToast.error = (message) => CustomToast({ message, type: 'error' });
+CustomToast.info = (message) => CustomToast({ message, type: 'info' });
+
 // Initialize toast container (call this once in your app, e.g., in App.js)
 export const ToastContainer = () => {
   return <ReactToastContainer />;

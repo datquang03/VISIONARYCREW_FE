@@ -55,6 +55,19 @@ const DoctorSchedule = () => {
     );
   };
 
+  // Hàm kiểm tra slot đã completed
+  const isSlotCompleted = (doctorId, date, timeSlot) => {
+    const dateStr = formatDate(date);
+    const { startTime, endTime } = timeSlot;
+    
+    return mySchedules?.some(slot =>
+      slot.date?.slice(0, 10) === dateStr &&
+      slot.timeSlot?.startTime === startTime &&
+      slot.timeSlot?.endTime === endTime &&
+      slot.status === 'completed'
+    );
+  };
+
   // Hàm kiểm tra slot quá khứ (dùng cho ScheduleTable, check cả giờ)
   const isPastSlot = (date, timeSlot) => {
     const now = new Date();
@@ -107,6 +120,7 @@ const DoctorSchedule = () => {
           timeSlots={timeSlots}
           getDaysOfWeek={getDaysOfWeek}
           isSlotAvailable={isSlotAvailable}
+          isSlotCompleted={isSlotCompleted}
           isPastSlot={isPastSlot}
         />
       </div>

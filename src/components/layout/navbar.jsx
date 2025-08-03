@@ -39,15 +39,24 @@ const Navbar = () => {
   // Socket connection for real-time notifications
   useEffect(() => {
     if (userInfo && userInfo.id) {
+      console.log('🔍 Debug: Joining socket room for user:', userInfo.id);
       socket.emit("join", userInfo.id);
       
       listenerRef.current = (newNotification) => {
+        console.log('🔍 Debug: Received notification via socket:', newNotification);
         // Không gọi API createNotification vì notification đã được tạo ở backend
         // Chỉ cần fetch lại notifications để có data đầy đủ
         dispatch(fetchNotifications());
       };
       
       socket.on("notification", listenerRef.current);
+      
+      // Listen for completed schedule events
+      socket.on("scheduleCompleted", (data) => {
+        console.log('🔍 Debug: Received scheduleCompleted event:', data);
+        // Dispatch custom event for mandatory feedback
+        window.dispatchEvent(new CustomEvent('scheduleCompleted', { detail: data }));
+      });
       
       return () => {
         socket.off("notification", listenerRef.current);

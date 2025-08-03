@@ -14,6 +14,7 @@ const UserScheduleDetailModal = ({ slot, onClose, onRegister, onCancelBooking, o
   const canRegister = slotType === 'doctor-free' || slotType === 'available';
   const isBookedByUser = slotType === 'booked-by-user';
   const isBookedByOther = slotType === 'booked-by-other';
+  const isCompleted = slot.status === 'completed';
   const isAccepted = slot.status === 'accepted';
   const dateStr = slot.date ? new Date(slot.date).toLocaleDateString('vi-VN') : '';
 
@@ -28,7 +29,11 @@ const UserScheduleDetailModal = ({ slot, onClose, onRegister, onCancelBooking, o
           <div className="mb-3 text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
             <div>
               <span className="font-semibold">Trạng thái:</span> {' '}
-              {isBookedByOther ? (
+              {isCompleted ? (
+                <span className="text-green-600 font-bold uppercase bg-green-100 px-3 py-1 rounded-full border-2 border-green-300 shadow-sm">
+                  ✅ ĐÃ HOÀN THÀNH
+                </span>
+              ) : isBookedByOther ? (
                 <span className="text-red-600 font-bold uppercase">ĐÃ CÓ NGƯỜI ĐẶT</span>
               ) : isAccepted ? (
                 <span className="text-green-600 font-bold uppercase bg-green-100 px-3 py-1 rounded-full border-2 border-green-300 shadow-sm">
@@ -85,7 +90,7 @@ const UserScheduleDetailModal = ({ slot, onClose, onRegister, onCancelBooking, o
                   <FaRegTimesCircle className="text-lg" /> Từ chối lịch hẹn
                 </button>
               )}
-              {isBookedByUser && onCancelBooking && !onRejectBooking && (
+              {isBookedByUser && onCancelBooking && !onRejectBooking && !isCompleted && (
                 <button
                   type="button"
                   onClick={() => setShowCancel(true)}

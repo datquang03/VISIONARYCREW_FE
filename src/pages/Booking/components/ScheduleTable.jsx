@@ -74,17 +74,19 @@ const ScheduleTable = ({
                         slot.timeSlot?.startTime === startTime &&
                         slot.timeSlot?.endTime === endTime
                       );
-                      if (slotObj) {
-                        if (slotObj.patient) {
-                          if (String(slotObj.patient) === String(currentUser?._id || currentUser?.id)) {
-                            status = 'booked-by-user';
-                          } else {
-                            status = 'booked-by-other';
-                          }
+                                          if (slotObj) {
+                      if (slotObj.status === 'completed') {
+                        status = 'completed';
+                      } else if (slotObj.patient) {
+                        if (String(slotObj.patient) === String(currentUser?._id || currentUser?.id)) {
+                          status = 'booked-by-user';
                         } else {
-                          status = 'doctor-free';
+                          status = 'booked-by-other';
                         }
+                      } else {
+                        status = 'doctor-free';
                       }
+                    }
                     } else {
                       status = selectedDoctor ? getSlotStatus(selectedDoctor.id, day, timeSlot) : 'empty';
                     }
@@ -102,6 +104,9 @@ const ScheduleTable = ({
                       cellText = 'Đã đặt';
                     } else if (status === 'available') {
                       statusClass = 'bg-green-300 hover:bg-green-400';
+                    } else if (status === 'completed') {
+                      statusClass = 'bg-green-600 text-white font-bold';
+                      cellText = 'Hoàn thành';
                     } else if (status === 'doctor-free') {
                       statusClass = 'bg-green-500 text-white font-bold';
                       cellText = 'Trống';
@@ -121,7 +126,9 @@ const ScheduleTable = ({
                         }`}
                         onClick={() => {
                           if (selectedDoctor) {
-                            if (status === 'booked-by-user' && slotObj) {
+                            if (status === 'completed' && slotObj) {
+                              handleSlotDetail({ ...slotObj, slotType: status });
+                            } else if (status === 'booked-by-user' && slotObj) {
                               handleSlotDetail({ ...slotObj, slotType: status });
                             } else if ((status === 'doctor-free' || status === 'available') && slotObj && !past) {
                               handleSlotDetail({ ...slotObj, slotType: status });
@@ -174,7 +181,9 @@ const ScheduleTable = ({
                       slot.timeSlot?.endTime === endTime
                     );
                     if (slotObj) {
-                      if (slotObj.patient) {
+                      if (slotObj.status === 'completed') {
+                        status = 'completed';
+                      } else if (slotObj.patient) {
                         if (String(slotObj.patient) === String(currentUser?._id || currentUser?.id)) {
                           status = 'booked-by-user';
                         } else {
@@ -195,6 +204,9 @@ const ScheduleTable = ({
                   if (status === 'booked-by-user') {
                     bgClass = 'bg-yellow-400 text-white font-bold';
                     text = 'Đã đặt';
+                  } else if (status === 'completed') {
+                    bgClass = 'bg-green-600 text-white font-bold';
+                    text = 'Hoàn thành';
                   } else if (status === 'booked-by-other') {
                     bgClass = 'bg-red-500 text-white font-bold';
                     text = 'Đã đặt';

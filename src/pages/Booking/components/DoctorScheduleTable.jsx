@@ -13,6 +13,8 @@ const DoctorScheduleTable = ({
   timeSlots,
   getDaysOfWeek,
   isSlotAvailable,
+  isSlotCompleted,
+  isPastSlot: isPastSlotProp,
   handleCreateAvailableSlot,
 }) => {
   const days = getDaysOfWeek();
@@ -50,7 +52,9 @@ const DoctorScheduleTable = ({
     });
     let slotStatus = '';
     if (slot) {
-      if (slot.patient) {
+      if (slot.status === 'completed') {
+        slotStatus = 'completed';
+      } else if (slot.patient) {
         slotStatus = 'booked';
       } else {
         slotStatus = 'created';
@@ -58,11 +62,13 @@ const DoctorScheduleTable = ({
     }
     
     // Cho phép click nếu có slot (dù ở quá khứ) hoặc slot mới không ở quá khứ
-    const canClick = slot || !isPastSlot(day, timeSlot);
+    const canClick = slot || !isPastSlotProp(day, timeSlot);
     
     if (!canClick) return;
     
-    if (slotStatus === 'booked') {
+    if (slotStatus === 'completed') {
+      setDetailModal({ ...slot, slotType: 'completed' });
+    } else if (slotStatus === 'booked') {
       setDetailModal({ ...slot, slotType: 'booked-by-user' });
     } else if (slotStatus === 'created') {
       setConfirmData({ day, timeSlot, slot }); // cho phép update/delete
@@ -154,7 +160,9 @@ const DoctorScheduleTable = ({
                     });
                   let slotStatus = '';
                   if (slot) {
-                    if (slot.patient) {
+                    if (slot.status === 'completed') {
+                      slotStatus = 'completed'; // Đã hoàn thành
+                    } else if (slot.patient) {
                       slotStatus = 'booked'; // Đã được book
                     } else {
                       slotStatus = 'created'; // Đã tạo nhưng chưa ai book
@@ -175,6 +183,7 @@ const DoctorScheduleTable = ({
                         <div className="font-bold text-xs">{day.getDay() === 0 ? 'CN' : `T${day.getDay() + 1}`}</div>
                         <div className="text-[10px]">{`${day.getDate()}/${day.getMonth() + 1}`}</div>
                         <div className="mt-1 flex items-center justify-center">
+                          {slotStatus === 'completed' && <span>hoàn thành</span>}
                           {slotStatus === 'booked' && <span>đã đặt</span>}
                           {slotStatus === 'created' && <span>chờ đặt</span>}
                           {!slot && !isPastSlot(day, timeSlot) && <span className="text-xl text-green-500 font-bold">+</span>}
@@ -219,7 +228,9 @@ const DoctorScheduleTable = ({
                     });
                     let slotStatus = '';
                     if (slot) {
-                      if (slot.patient) {
+                      if (slot.status === 'completed') {
+                        slotStatus = 'completed';
+                      } else if (slot.patient) {
                         slotStatus = 'booked';
                       } else {
                         slotStatus = 'created';
@@ -234,11 +245,13 @@ const DoctorScheduleTable = ({
                           w-[80px] h-[60px] md:w-[120px] md:h-[100px] p-0
                           ${isPastSlot(day, timeSlot) && !slot ? 'bg-gray-300 cursor-not-allowed opacity-60' : 'cursor-pointer'}
                           ${isToday ? 'bg-green-50 border-l-2 border-green-400' : ''}
+                          ${slotStatus === 'completed' ? 'bg-green-600 text-white font-bold' : ''}
                           ${slotStatus === 'booked' ? 'bg-yellow-400 text-white font-bold' : ''}
                           ${slotStatus === 'created' ? 'bg-blue-400 text-white font-bold' : ''}`}
                         onClick={() => handleSlotClick(day, timeSlot)}
                       >
                         <div className="flex items-center justify-center h-full w-full min-h-[60px] min-w-[80px] md:min-h-[100px] md:min-w-[120px]">
+                          {slotStatus === 'completed' && <span>hoàn thành</span>}
                           {slotStatus === 'booked' && <span>đã đặt</span>}
                           {slotStatus === 'created' && <span>chờ đặt</span>}
                           {!slot && !isPastSlot(day, timeSlot) && <span className="text-2xl text-green-500 font-bold">+</span>}

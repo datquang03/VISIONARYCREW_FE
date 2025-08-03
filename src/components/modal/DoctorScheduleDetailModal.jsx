@@ -21,7 +21,11 @@ const DoctorScheduleDetailModal = ({ slot, onClose }) => {
           <div className="mb-3 text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
             <div>
               <span className="font-semibold">Trạng thái:</span> {' '}
-              {slot.status === 'accepted' ? (
+              {slot.status === 'completed' ? (
+                <span className="text-green-600 font-bold uppercase bg-green-100 px-3 py-1 rounded-full border-2 border-green-300 shadow-sm">
+                  ✅ ĐÃ HOÀN THÀNH
+                </span>
+              ) : slot.status === 'accepted' ? (
                 <span className="text-green-600 font-bold uppercase bg-green-100 px-3 py-1 rounded-full border-2 border-green-300 shadow-sm">
                   ✅ ĐÃ CHẤP NHẬN
                 </span>

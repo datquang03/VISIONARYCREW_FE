@@ -16,8 +16,12 @@ import AdminDashboard from "./pages/Dashboard/Admin/AdminDashboard";
 import DoctorRegisterTab from "./pages/Dashboard/Admin/DoctorRegisterTab";
 import DoctorsPage from "./pages/Dashboard/Admin/DoctorTab";
 import UsersManagement from "./pages/Dashboard/Admin/UsersManagement";
+import AdminFeedback from "./pages/Dashboard/Admin/AdminFeedback";
 import DoctorDashboard from "./pages/Dashboard/Doctor/DoctorDashboard";
 import DoctorRegisterForm from "./pages/Dashboard/Doctor/DoctorRegisterForm";
+import DoctorFeedback from "./pages/Dashboard/Doctor/DoctorFeedback";
+import UserProfileDetail from "./pages/Profile/User/UserProfileDetail";
+import DoctorProfileDetail from "./pages/Profile/Doctor/DoctorProfileDetail";
 import { SidebarProvider } from "./pages/Dashboard/components/SidebarContext";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "./components/Toast/CustomToast";
@@ -36,6 +40,7 @@ import DoctorPaymentFail from "./pages/Package/DoctorPaymentFail";
 import DoctorPendingSchedule from "./pages/Dashboard/Doctor/DoctorPendingSchedule";
 import AIChatBubble from "./components/AIChatBubble/AIChatBubble";
 import DoctorHome from "./pages/Dashboard/Doctor/DoctorHome";
+import MandatoryFeedback from "./components/MandatoryFeedback/MandatoryFeedback";
 
 
 const App = () => {
@@ -54,6 +59,7 @@ const App = () => {
       <SidebarProvider>
         <ToastContainer />
         <AIChatBubble />
+        <MandatoryFeedback />
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<Homepage />} />
@@ -69,6 +75,7 @@ const App = () => {
           <Route element={<AdminAndUserProtectedRouter />}>
             <Route path="/booking" element={<UserBookingPage />} />
             <Route path="/profile" element={<UserProfile />} />
+            <Route path="/profile/user/:userId" element={<UserProfileDetail />} />
           </Route>
 
           {/* Admin protected routes */}
@@ -82,7 +89,9 @@ const App = () => {
               <Route path="doctors" element={<DoctorsPage />} />
               <Route path="users" element={<UsersManagement />} />
               <Route path="doctors/pending" element={<DoctorRegisterTab />} />
+              <Route path="feedback" element={<AdminFeedback />} />
             </Route>
+            <Route path="/profile/doctor/:doctorId" element={<DoctorProfileDetail />} />
           </Route>
 
           {/* Doctor protected routes */}
@@ -96,6 +105,7 @@ const App = () => {
               />
               <Route path="pending" element={<DoctorPendingSchedule />} />
               <Route path="form" element={<DoctorRegisterForm />} />
+              <Route path="feedback" element={<DoctorFeedback />} />
             </Route>
             <Route path="/doctor/booking" element={<DoctorSchedule />} />
             <Route path="/doctor/packages" element={<DoctorPackages />} />

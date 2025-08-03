@@ -246,7 +246,9 @@ const HealthcareBookingSystem = () => {
                 slot.timeSlot?.endTime === endTime
               );
               if (found) {
-                if (found.patient) {
+                if (found.status === 'completed') {
+                  return 'completed'; // Slot màu xanh lá cho lịch đã hoàn thành
+                } else if (found.patient) {
                   if (String(found.patient) === String(currentUser?.id)) {
                     return 'booked-by-user'; // Slot màu vàng cho user đã đăng ký
                   } else {

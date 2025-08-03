@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef } from 'react';
 import { SidebarContext } from './SidebarContext';
 import { NavLink } from 'react-router-dom';
-import { FaBars, FaTachometerAlt, FaUserMd, FaUsers, FaClipboardList, FaWpforms, FaHistory, FaHome } from 'react-icons/fa';
+import { FaBars, FaTachometerAlt, FaUserMd, FaUsers, FaClipboardList, FaWpforms, FaHistory, FaHome, FaStar } from 'react-icons/fa';
 import { gsap } from 'gsap';
 import { MdOutlinePendingActions } from 'react-icons/md';
 
@@ -17,6 +17,7 @@ const Sidebar = ({ role }) => {
     { path: '/doctor/form', label: 'Đơn đăng kí của bạn', icon: <FaWpforms /> },
     { path: '/doctor/payment/history', label: 'Lịch sử thanh toán', icon: <FaHistory /> },
     { path: '/doctor/pending', label: 'Yêu cầu đăng kí', icon: <MdOutlinePendingActions /> },
+    { path: '/doctor/feedback', label: 'Đánh giá từ bệnh nhân', icon: <FaStar /> },
     { path: '/', label: 'Về trang chủ', icon: <FaHome /> },
   ];
   
@@ -25,6 +26,7 @@ const Sidebar = ({ role }) => {
     { path: '/admin/doctors', label: 'Bác sĩ', icon: <FaUserMd />, exact: true },
     { path: '/admin/users', label: 'Người dùng', icon: <FaUsers /> },
     { path: '/admin/doctors/pending', label: 'Đơn đăng ký', icon: <FaClipboardList /> },
+    { path: '/admin/feedback', label: 'Quản lý đánh giá', icon: <FaStar /> },
     { path: '/', label: 'Về trang chủ', icon: <FaHome /> },
   ];
 
@@ -104,47 +106,35 @@ const Sidebar = ({ role }) => {
     }
   };
 
-  // Thêm useEffect để tự động thu gọn sidebar trên màn hình nhỏ:
-  useEffect(() => {
-    if (typeof toggleSidebar === 'function') {
-      if (window.innerWidth < 768 && !isCollapsed) {
-        toggleSidebar();
-      }
-      if (window.innerWidth >= 768 && isCollapsed) {
-        toggleSidebar();
-      }
-    }
-    // Không cần addEventListener resize nữa!
-    // Chỉ chạy 1 lần khi mount để set trạng thái ban đầu
-    // Người dùng bấm icon menu sẽ tự do toggle
-    // eslint-disable-next-line
-  }, []);
-
   return (
-    <div
+    <aside
       ref={sidebarRef}
-      className={`bg-gray-800 text-white h-screen ${
+      className={`fixed left-0 top-0 h-full bg-gray-800 text-white shadow-xl z-50 transition-all duration-300 ${
         isCollapsed ? 'w-16' : 'w-64'
-      } transition-all duration-300 fixed top-0 left-0 z-50 shadow-lg`}
+      }`}
     >
-      <div className="p-4 flex items-center justify-between border-b border-gray-700">
-        <h2
-          ref={titleRef}
-          className={`text-xl font-bold ${isCollapsed ? 'hidden' : 'block'} truncate`}
-        >
-          {role === 'doctor' ? 'Doctor Dashboard' : 'Admin Dashboard'}
-        </h2>
-        <button
-          onClick={toggleSidebar}
-          className="text-white hover:text-gray-300 focus:outline-none cursor-pointer"
-          title={isCollapsed ? 'Mở rộng' : 'Thu gọn'}
-          style={{ transition: 'transform 0.2s' }}
-          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.15)'}
-          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          <FaBars className="text-xl" />
-        </button>
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-700">
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={toggleSidebar}
+            className="text-white hover:text-gray-300 focus:outline-none cursor-pointer"
+            title={isCollapsed ? 'Mở rộng' : 'Thu gọn'}
+            style={{ transition: 'transform 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.15)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            <FaBars className="text-xl" />
+          </button>
+          {!isCollapsed && (
+            <h2 ref={titleRef} className="text-xl font-bold truncate">
+              {role === 'doctor' ? 'Doctor Dashboard' : 'Admin Dashboard'}
+            </h2>
+          )}
+        </div>
       </div>
+
+      {/* Navigation Links */}
       <nav className="mt-4 flex flex-col items-center">
         {links.map((link, index) => (
           <NavLink
@@ -169,7 +159,7 @@ const Sidebar = ({ role }) => {
           </NavLink>
         ))}
       </nav>
-    </div>
+    </aside>
   );
 };
 

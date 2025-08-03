@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { checkPackagePaymentStatus } from '../../redux/APIs/slices/paymentSlice';
+import { motion } from 'framer-motion';
 import gsap from 'gsap';
 
 const DoctorPaymentSuccess = () => {

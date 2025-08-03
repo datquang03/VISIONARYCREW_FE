@@ -119,6 +119,15 @@ export const acceptRegisterSchedule = createAsyncThunk('schedules/acceptRegister
   }
 });
 
+export const completeSchedule = createAsyncThunk('schedules/complete', async (scheduleId, { rejectWithValue }) => {
+  try {
+    const { data } = await axios.post(`/schedules/complete/${scheduleId}`);
+    return data;
+  } catch (err) {
+    return rejectWithValue(err.response?.data || err.message);
+  }
+});
+
 export const cancelPendingSchedule = createAsyncThunk('schedules/cancelPending', async (scheduleId, { rejectWithValue }) => {
   try {
     const { data } = await axios.post(`/schedules/cancel-pending/${scheduleId}`);
@@ -164,6 +173,7 @@ const scheduleSlice = createSlice({
     acceptLoading: false,
     makeAvailableLoading: false,
     getPendingLoading: false,
+    completeLoading: false,
   },
   reducers: {
     clearScheduleState: (state) => {
@@ -310,6 +320,16 @@ const scheduleSlice = createSlice({
     builder.addCase(acceptRegisterSchedule.rejected, (state, action) => {
       state.acceptLoading = false; state.error = action.payload;
     });
+    // completeSchedule
+    builder.addCase(completeSchedule.pending, (state) => {
+      state.completeLoading = true; state.error = null; state.success = null;
+    });
+    builder.addCase(completeSchedule.fulfilled, (state, action) => {
+      state.completeLoading = false; state.success = action.payload.message; state.currentSchedule = action.payload.schedule;
+    });
+    builder.addCase(completeSchedule.rejected, (state, action) => {
+      state.completeLoading = false; state.error = action.payload;
+    });
     // cancelPendingSchedule
     builder.addCase(cancelPendingSchedule.pending, (state) => {
       state.cancelPendingLoading = true; state.error = null; state.success = null;
@@ -358,6 +378,7 @@ export const selectUpdateLoading = (state) => state.scheduleSlice?.updateLoading
 export const selectDeleteLoading = (state) => state.scheduleSlice?.deleteLoading || false;
 export const selectRejectLoading = (state) => state.scheduleSlice?.rejectLoading || false;
 export const selectAcceptLoading = (state) => state.scheduleSlice?.acceptLoading || false;
+export const selectCompleteLoading = (state) => state.scheduleSlice?.completeLoading || false;
 export const selectMakeAvailableLoading = (state) => state.scheduleSlice?.makeAvailableLoading || false;
 export const selectGetPendingLoading = (state) => state.scheduleSlice?.getPendingLoading || false;
 
