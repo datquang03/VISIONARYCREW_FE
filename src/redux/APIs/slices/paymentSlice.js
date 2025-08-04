@@ -83,8 +83,23 @@ export const getPackages = createAsyncThunk(
   }
 );
 
+// Lấy tất cả thanh toán cho admin
+export const getAllPayment = createAsyncThunk(
+  "payment/getAllPayment",
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await getRequest(`payments/admin/all${queryString ? `?${queryString}` : ''}`);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Error fetching all payments");
+    }
+  }
+);
+
 const initialState = {
   payments: [], // Lịch sử thanh toán
+  allPayments: [], // Tất cả thanh toán cho admin
   payment: null, // Thông tin thanh toán hiện tại
   packages: [], // Danh sách gói dịch vụ
   isLoading: false,
@@ -98,6 +113,20 @@ const initialState = {
     totalPayments: 0,
     limit: 10,
   },
+  adminPagination: {
+    currentPage: 1,
+    totalPages: 1,
+    totalPayments: 0,
+    limit: 20,
+  },
+  adminStatistics: {
+    total: 0,
+    byStatus: {},
+    byPackageType: {},
+    totalAmount: 0,
+    successfulAmount: 0,
+    successRate: 0
+  }
 };
 
 const paymentSlice = createSlice({
@@ -269,6 +298,34 @@ const paymentSlice = createSlice({
         state.isSuccess = false;
         state.isError = true;
         state.message = action.payload?.message || "Error fetching packages";
+      })
+
+      // Lấy tất cả thanh toán cho admin
+      .addCase(getAllPayment.pending, (state) => {
+        state.isLoading = true;
+        state.isSuccess = false;
+        state.isError = false;
+      })
+      .addCase(getAllPayment.fulfilled, (state, action) => {
+        if (action.payload.status === 200 || action.payload.status === 201) {
+          state.isLoading = false;
+          state.isSuccess = true;
+          state.allPayments = action.payload.data.payments;
+          state.message = action.payload.data.message;
+          state.adminPagination = action.payload.data.pagination;
+          state.adminStatistics = action.payload.data.statistics;
+        } else {
+          state.isLoading = false;
+          state.isSuccess = false;
+          state.isError = true;
+          state.message = action.payload.data.message;
+        }
+      })
+      .addCase(getAllPayment.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = false;
+        state.isError = true;
+        state.message = action.payload?.message || "Error fetching all payments";
       });
   },
 });

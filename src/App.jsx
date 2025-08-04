@@ -17,11 +17,14 @@ import DoctorRegisterTab from "./pages/Dashboard/Admin/DoctorRegisterTab";
 import DoctorsPage from "./pages/Dashboard/Admin/DoctorTab";
 import UsersManagement from "./pages/Dashboard/Admin/UsersManagement";
 import AdminFeedback from "./pages/Dashboard/Admin/AdminFeedback";
+import AdminPayment from "./pages/Dashboard/Admin/AdminPayment";
 import DoctorDashboard from "./pages/Dashboard/Doctor/DoctorDashboard";
 import DoctorRegisterForm from "./pages/Dashboard/Doctor/DoctorRegisterForm";
 import DoctorFeedback from "./pages/Dashboard/Doctor/DoctorFeedback";
 import UserProfileDetail from "./pages/Profile/User/UserProfileDetail";
 import DoctorProfileDetail from "./pages/Profile/Doctor/DoctorProfileDetail";
+import UserChatPage from "./pages/Chat/UserChatPage";
+import DoctorChatPage from "./pages/Chat/DoctorChatPage";
 import { SidebarProvider } from "./pages/Dashboard/components/SidebarContext";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "./components/Toast/CustomToast";
@@ -76,6 +79,7 @@ const App = () => {
             <Route path="/booking" element={<UserBookingPage />} />
             <Route path="/profile" element={<UserProfile />} />
             <Route path="/profile/user/:userId" element={<UserProfileDetail />} />
+            <Route path="/chat" element={<UserChatPage />} />
           </Route>
 
           {/* Admin protected routes */}
@@ -90,6 +94,7 @@ const App = () => {
               <Route path="users" element={<UsersManagement />} />
               <Route path="doctors/pending" element={<DoctorRegisterTab />} />
               <Route path="feedback" element={<AdminFeedback />} />
+              <Route path="payments" element={<AdminPayment />} />
             </Route>
             <Route path="/profile/doctor/:doctorId" element={<DoctorProfileDetail />} />
           </Route>
@@ -106,6 +111,7 @@ const App = () => {
               <Route path="pending" element={<DoctorPendingSchedule />} />
               <Route path="form" element={<DoctorRegisterForm />} />
               <Route path="feedback" element={<DoctorFeedback />} />
+              <Route path="chat" element={<DoctorChatPage />} />
             </Route>
             <Route path="/doctor/booking" element={<DoctorSchedule />} />
             <Route path="/doctor/packages" element={<DoctorPackages />} />

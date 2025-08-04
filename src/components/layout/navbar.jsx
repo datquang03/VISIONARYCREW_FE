@@ -8,7 +8,7 @@ import { getDoctorProfile } from "../../redux/APIs/slices/doctorProfileSlice";
 import NavbarDropdown from "./navbarDropdown";
 import { FaBell, FaTimes, FaEye } from "react-icons/fa";
 import { fetchNotifications, markNotificationRead, deleteNotification, deleteAllNotification } from '../../redux/APIs/slices/notificationSlice';
-import { socket } from '../../utils/socket';
+import socketService from '../../utils/socket';
 import ShortLoading from '../Loading/ShortLoading';
 
 const Navbar = () => {
@@ -40,7 +40,10 @@ const Navbar = () => {
   useEffect(() => {
     if (userInfo && userInfo.id) {
       console.log('🔍 Debug: Joining socket room for user:', userInfo.id);
-      socket.emit("join", userInfo.id);
+      const socket = socketService.getSocket();
+      if (socket) {
+        socket.emit("join", userInfo.id);
+      }
       
       listenerRef.current = (newNotification) => {
         console.log('🔍 Debug: Received notification via socket:', newNotification);
@@ -49,17 +52,20 @@ const Navbar = () => {
         dispatch(fetchNotifications());
       };
       
-      socket.on("notification", listenerRef.current);
-      
-      // Listen for completed schedule events
-      socket.on("scheduleCompleted", (data) => {
-        console.log('🔍 Debug: Received scheduleCompleted event:', data);
-        // Dispatch custom event for mandatory feedback
-        window.dispatchEvent(new CustomEvent('scheduleCompleted', { detail: data }));
-      });
+      if (socket) {
+        socket.on("notification", listenerRef.current);
+        // Listen for completed schedule events
+        socket.on("scheduleCompleted", (data) => {
+          console.log('🔍 Debug: Received scheduleCompleted event:', data);
+          // Dispatch custom event for mandatory feedback
+          window.dispatchEvent(new CustomEvent('scheduleCompleted', { detail: data }));
+        });
+      }
       
       return () => {
-        socket.off("notification", listenerRef.current);
+        if (socket) {
+          socket.off("notification", listenerRef.current);
+        }
       };
     }
   }, [userInfo, dispatch]);

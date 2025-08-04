@@ -13,6 +13,7 @@ import scheduleReducer from "./APIs/slices/scheduleSlice";
 import notificationReducer from './APIs/slices/notificationSlice';
 import aiReducer from './APIs/slices/aiSlice';
 import feedbackReducer from './APIs/slices/feedbackSlice';
+import messageReducer from './APIs/slices/messageSlice';
 
 const store = configureStore({
   reducer: {
@@ -22,7 +23,7 @@ const store = configureStore({
 
     doctorRegisterSlice: doctorRegisterSlice.reducer,
     adminSlice: adminSlice.reducer,
-    userProfileSlice: userProfileSlice.reducer,
+    userProfileSlice: userProfileSlice,
     doctorProfile: doctorProfileSlice.reducer,
     paymentSlice: paymentSlice.reducer,
     global: globalReducer,
@@ -30,6 +31,7 @@ const store = configureStore({
     notification: notificationReducer,
     ai: aiReducer,
     feedbackSlice: feedbackReducer,
+    messageSlice: messageReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -38,3 +40,4 @@ const store = configureStore({
 });
 
 export default store;
+export { store };

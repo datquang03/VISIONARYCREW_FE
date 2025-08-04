@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef } from 'react';
 import { SidebarContext } from './SidebarContext';
 import { NavLink } from 'react-router-dom';
-import { FaBars, FaTachometerAlt, FaUserMd, FaUsers, FaClipboardList, FaWpforms, FaHistory, FaHome, FaStar } from 'react-icons/fa';
+import { FaBars, FaTachometerAlt, FaUserMd, FaUsers, FaClipboardList, FaWpforms, FaHistory, FaHome, FaStar, FaCreditCard, FaComments } from 'react-icons/fa';
 import { gsap } from 'gsap';
 import { MdOutlinePendingActions } from 'react-icons/md';
 
@@ -18,6 +18,7 @@ const Sidebar = ({ role }) => {
     { path: '/doctor/payment/history', label: 'Lịch sử thanh toán', icon: <FaHistory /> },
     { path: '/doctor/pending', label: 'Yêu cầu đăng kí', icon: <MdOutlinePendingActions /> },
     { path: '/doctor/feedback', label: 'Đánh giá từ bệnh nhân', icon: <FaStar /> },
+    { path: '/doctor/chat', label: 'Tin nhắn bệnh nhân', icon: <FaComments /> },
     { path: '/', label: 'Về trang chủ', icon: <FaHome /> },
   ];
   
@@ -26,6 +27,7 @@ const Sidebar = ({ role }) => {
     { path: '/admin/doctors', label: 'Bác sĩ', icon: <FaUserMd />, exact: true },
     { path: '/admin/users', label: 'Người dùng', icon: <FaUsers /> },
     { path: '/admin/doctors/pending', label: 'Đơn đăng ký', icon: <FaClipboardList /> },
+    { path: '/admin/payments', label: 'Quản lý thanh toán', icon: <FaCreditCard /> },
     { path: '/admin/feedback', label: 'Quản lý đánh giá', icon: <FaStar /> },
     { path: '/', label: 'Về trang chủ', icon: <FaHome /> },
   ];
