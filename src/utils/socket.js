@@ -4,7 +4,9 @@ import {
   addNewMessage, 
   updateMessageRead, 
   deleteMessageFromState,
-  setTypingStatus 
+  setTypingStatus,
+  getConversations,
+  getConversationUnlockStatus
 } from '../redux/APIs/slices/messageSlice';
 
 class SocketService {
@@ -35,12 +37,24 @@ class SocketService {
 
     // Connection events
     this.socket.on('connect', () => {
-      console.log('🔌 Socket connected:', this.socket.id);
+      console.log('🔌🔌🔌 SOCKET CONNECTED! 🔌🔌🔌');
+      console.log('🔌 Socket connected:', {
+        socketId: this.socket.id,
+        userId,
+        userType,
+        serverUrl
+      });
       this.isConnected = true;
       this.reconnectAttempts = 0;
       
       // Join user room
+      console.log('🏠 Joining room:', `user_${userId}`);
       this.socket.emit('join', { userId, userType });
+      
+      // Add a listener to confirm room join
+      this.socket.on('room_joined', (data) => {
+        console.log('✅ Successfully joined room:', data);
+      });
     });
 
     this.socket.on('disconnect', (reason) => {
@@ -73,8 +87,50 @@ class SocketService {
 
     // Message events
     this.socket.on('new_message', (data) => {
-      console.log('📨 New message received:', data);
+      console.log('🎉🎉🎉 FRONTEND RECEIVED NEW MESSAGE! 🎉🎉🎉');
+      console.log('📨 NEW MESSAGE RECEIVED:', {
+        messageId: data.message?._id,
+        from: data.message?.senderName,
+        to: data.message?.receiverName,
+        content: data.message?.content?.substring(0, 50) + '...',
+        conversationId: data.conversationId,
+        fullData: data
+      });
+      
       store.dispatch(addNewMessage(data));
+      
+      // Reload conversations to update conversation list (with a small delay to ensure message is saved)
+      setTimeout(() => {
+        console.log('🔄 Reloading conversations after new message');
+        store.dispatch(getConversations());
+        
+        // If this is a new conversation (welcome message), refresh unlock status
+        const state = store.getState();
+        const { user, doctor } = state.authSlice;
+        const currentUserId = user?._id || doctor?._id;
+        const currentUserType = user ? 'User' : 'Doctor';
+        
+        if (data.message && currentUserId) {
+          const otherUserId = data.message.senderId._id === currentUserId 
+            ? data.message.receiverId._id 
+            : data.message.senderId._id;
+          
+          if (currentUserType === 'User') {
+            // User receiving message from doctor
+            store.dispatch(getConversationUnlockStatus({ 
+              userId: currentUserId, 
+              doctorId: otherUserId 
+            }));
+          } else {
+            // Doctor receiving message from user
+            store.dispatch(getConversationUnlockStatus({ 
+              userId: otherUserId, 
+              doctorId: currentUserId 
+            }));
+          }
+          console.log('🔄 Refreshed unlock status for new conversation');
+        }
+      }, 500);
     });
 
     this.socket.on('messages_read', (data) => {
@@ -110,6 +166,45 @@ class SocketService {
     this.socket.on('message_reaction', (data) => {
       console.log('😀 Message reaction:', data);
       // Handle message reactions if needed
+    });
+
+    // Notification events - when schedule is accepted, refresh conversations
+    this.socket.on('notification', (data) => {
+      console.log('🔔 Notification received:', data);
+      
+      if (data.type === 'schedule_accept') {
+        console.log('✅ Schedule accepted - refreshing conversations and unlock status');
+        
+        setTimeout(() => {
+          // Refresh conversations to show new chat availability
+          store.dispatch(getConversations());
+          
+          // Get current user info to refresh unlock status
+          const state = store.getState();
+          const { user, doctor } = state.authSlice;
+          const currentUserId = user?._id || doctor?._id;
+          const currentUserType = user ? 'User' : 'Doctor';
+          
+          // This notification means a schedule was accepted, so chat should be unlocked
+          // We need to refresh unlock status for all conversations
+          const conversations = state.messageSlice.conversations;
+          if (Array.isArray(conversations)) {
+            conversations.forEach(conversation => {
+              if (currentUserType === 'User' && conversation.otherUser?.type === 'Doctor') {
+                store.dispatch(getConversationUnlockStatus({ 
+                  userId: currentUserId, 
+                  doctorId: conversation.otherUser.id 
+                }));
+              } else if (currentUserType === 'Doctor' && conversation.otherUser?.type === 'User') {
+                store.dispatch(getConversationUnlockStatus({ 
+                  userId: conversation.otherUser.id, 
+                  doctorId: currentUserId 
+                }));
+              }
+            });
+          }
+        }, 1000); // Longer delay to ensure backend processing is complete
+      }
     });
 
     return this.socket;

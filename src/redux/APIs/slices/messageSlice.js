@@ -19,8 +19,16 @@ export const getConversations = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await getRequest('messages/conversations');
+      console.log('🔍 Debug getConversations API response:', {
+        response,
+        status: response?.status,
+        data: response?.data,
+        dataType: typeof response?.data,
+        isDataArray: Array.isArray(response?.data)
+      });
       return response;
     } catch (error) {
+      console.error('❌ getConversations API error:', error);
       return rejectWithValue(error.response?.data || 'Error fetching conversations');
     }
   }
@@ -129,9 +137,19 @@ const messageSlice = createSlice({
     addNewMessage: (state, action) => {
       const { message, conversationId } = action.payload;
       
+      console.log('🔄 ADDING NEW MESSAGE TO REDUX:', { 
+        messageId: message._id,
+        from: message.senderName,
+        to: message.receiverName,
+        conversationId,
+        currentConversation: state.currentConversation,
+        isCurrentConversation: state.currentConversation === conversationId
+      });
+      
       // Add to messages if in current conversation
       if (state.currentConversation === conversationId) {
         state.messages.push(message);
+        console.log('🔍 Debug: Message added to current conversation');
       }
       
       // Update conversation list
@@ -141,11 +159,19 @@ const messageSlice = createSlice({
       
       if (conversationIndex !== -1) {
         state.conversations[conversationIndex].lastMessage = message;
-        state.conversations[conversationIndex].unreadCount += 1;
+        // Only increment unread count if not in current conversation
+        if (state.currentConversation !== conversationId) {
+          state.conversations[conversationIndex].unreadCount += 1;
+        }
+        console.log('🔍 Debug: Updated existing conversation');
+      } else {
+        console.log('🔍 Debug: Conversation not found in list, will be loaded by getConversations');
       }
       
-      // Update unread count
-      state.unreadCount += 1;
+      // Update unread count only if not in current conversation
+      if (state.currentConversation !== conversationId) {
+        state.unreadCount += 1;
+      }
     },
     
     updateMessageRead: (state, action) => {
@@ -215,7 +241,7 @@ const messageSlice = createSlice({
       state.message = null;
     },
     
-    setTypingStatus: (_state, _action) => {
+    setTypingStatus: () => {
       // Handle typing indicators if needed
       // TODO: Implement typing status logic
     }
@@ -248,10 +274,14 @@ const messageSlice = createSlice({
       })
       .addCase(getConversations.fulfilled, (state, action) => {
         state.isLoading = false;
+        
         if (action.payload.status === 200) {
-          state.conversations = action.payload.data;
+          // Handle nested data structure: response.data.data
+          const conversations = action.payload.data?.data || action.payload.data || [];
+          state.conversations = Array.isArray(conversations) ? conversations : [];
+          console.log('✅ Conversations loaded:', state.conversations.length);
         } else {
-          state.error = action.payload.data.message;
+          state.error = action.payload.data?.message || 'Error loading conversations';
         }
       })
       .addCase(getConversations.rejected, (state, action) => {

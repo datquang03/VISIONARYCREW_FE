@@ -8,7 +8,8 @@ import {
   deleteMessage,
   getUnreadCount,
   setCurrentConversation,
-  clearMessages
+  clearMessages,
+  getConversationUnlockStatus
 } from '../../redux/APIs/slices/messageSlice';
 import socketService from '../../utils/socket';
 import { FaPaperPlane, FaSearch, FaTrash, FaUser, FaUserMd, FaLock, FaUnlock, FaCheckCircle, FaClock } from 'react-icons/fa';
@@ -22,6 +23,7 @@ const DoctorChatPage = () => {
     messages, 
     currentConversation, 
     unreadCount,
+    unlockStatus,
     isLoading, 
     isSending,
     pagination 
@@ -54,6 +56,20 @@ const DoctorChatPage = () => {
     }
   }, [dispatch, doctor]);
 
+  // Load unlock status for conversations
+  useEffect(() => {
+    if (doctor?._id && Array.isArray(conversations)) {
+      conversations.forEach(conversation => {
+        if (conversation.otherUser?.type === 'User') {
+          dispatch(getConversationUnlockStatus({ 
+            userId: conversation.otherUser.id, 
+            doctorId: doctor._id 
+          }));
+        }
+      });
+    }
+  }, [conversations, doctor?._id, dispatch]);
+
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -72,6 +88,14 @@ const DoctorChatPage = () => {
     // Mark messages as read
     if (conversation.unreadCount > 0) {
       dispatch(markMessagesAsRead(conversation.conversationId));
+    }
+
+    // Refresh unlock status for this conversation
+    if (conversation.otherUser.type === 'User' && doctor?._id) {
+      dispatch(getConversationUnlockStatus({ 
+        userId: conversation.otherUser.id, 
+        doctorId: doctor._id 
+      }));
     }
   };
 
@@ -151,28 +175,33 @@ const DoctorChatPage = () => {
 
   // Check if conversation is unlocked (doctor approved schedule)
   const isConversationUnlocked = (conversation) => {
-    // This should check if the doctor has approved a schedule for this user
-    // For now, we'll assume it's unlocked if there's a conversation
-    return conversation && conversation.lastMessage;
+    if (!conversation || conversation.otherUser.type !== 'User' || !doctor?._id) return false;
+    const unlockKey = `${conversation.otherUser.id}_${doctor._id}`;
+    return unlockStatus[unlockKey] || false;
   };
 
   // Get schedule status for user
   const getScheduleStatus = (conversation) => {
-    // This should check the actual schedule status from the database
-    // For now, we'll return a mock status
+    const isUnlocked = isConversationUnlocked(conversation);
     return {
-      hasApprovedSchedule: true, // This should be fetched from schedule data
-      scheduleDate: '2024-01-15',
-      scheduleTime: '09:00'
+      hasApprovedSchedule: isUnlocked,
+      scheduleDate: isUnlocked ? '2024-01-15' : null, // This could be fetched from schedule data
+      scheduleTime: isUnlocked ? '09:00' : null
     };
   };
 
+  // Debug logging
+  console.log('🔍 DoctorChatPage conversations loaded:', {
+    count: conversations?.length || 0,
+    isArray: Array.isArray(conversations)
+  });
+
   // Filter conversations by search
-  const filteredConversations = conversations.filter(conv => {
+  const filteredConversations = (conversations || []).filter(conv => {
     const searchLower = searchQuery.toLowerCase();
     return (
-      conv.otherUser.name.toLowerCase().includes(searchLower) ||
-      conv.lastMessage?.content.toLowerCase().includes(searchLower)
+      conv.otherUser?.name?.toLowerCase().includes(searchLower) ||
+      conv.lastMessage?.content?.toLowerCase().includes(searchLower)
     );
   });
 
@@ -182,7 +211,35 @@ const DoctorChatPage = () => {
       <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-800">Tin nhắn bệnh nhân</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold text-gray-800">Tin nhắn bệnh nhân</h1>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  console.log('🔄 Manual refresh conversations');
+                  dispatch(getConversations());
+                }}
+                className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+              >
+                Refresh
+              </button>
+              <button
+                onClick={() => {
+                  console.log('🔌 Socket status:', {
+                    connected: socketService.isSocketConnected(),
+                    doctorId: doctor?._id
+                  });
+                  if (!socketService.isSocketConnected() && doctor?._id) {
+                    console.log('🔄 Reconnecting socket...');
+                    socketService.reconnect(doctor._id, 'Doctor');
+                  }
+                }}
+                className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
+              >
+                Socket
+              </button>
+            </div>
+          </div>
           <div className="mt-3 relative">
             <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
