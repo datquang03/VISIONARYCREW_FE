@@ -24,7 +24,7 @@ class SocketService {
       this.disconnect();
     }
 
-    const serverUrl = process.env.REACT_APP_SOCKET_URL || 'http://localhost:8080';
+    const serverUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:8080';
     
     this.socket = io(serverUrl, {
       transports: ['websocket', 'polling'],

@@ -68,19 +68,20 @@ const NavbarDropdown = ({ onClose }) => {
 
   const feedbackCount = getFeedbackCount();
   const commonItems = [
-    { label: "Settings", to: "/settings", icon: <FaCogs /> },
-    { 
-      label: "Feedback", 
-      to: "/feedback", 
-      icon: <FaStar />,
-      badge: feedbackCount > 0 ? feedbackCount : null
-    }
+    { label: "Settings", to: "/settings", icon: <FaCogs /> }
+    
   ];
 
 
   const roleItems = {
     admin: [
       { label: "Dashboard", to: "/admin/dashboard", icon: <FaTachometerAlt /> },
+      { 
+        label: "Feedback", 
+        to: "/feedback", 
+        icon: <FaStar />,
+        badge: feedbackCount > 0 ? feedbackCount : null
+      }
     ],
     doctor: [
       {
@@ -97,6 +98,12 @@ const NavbarDropdown = ({ onClose }) => {
     ],
     user: [
       { label: "Profile", to: "/profile", icon: <FaUserCircle /> },
+      { 
+        label: "Feedback", 
+        to: "/feedback", 
+        icon: <FaStar />,
+        badge: feedbackCount > 0 ? feedbackCount : null
+      }
     ],
   };
 
