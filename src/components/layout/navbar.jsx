@@ -56,7 +56,6 @@ const Navbar = () => {
         socket.on("notification", listenerRef.current);
         // Listen for completed schedule events
         socket.on("scheduleCompleted", (data) => {
-          console.log('🔍 Debug: Received scheduleCompleted event:', data);
           // Dispatch custom event for mandatory feedback
           window.dispatchEvent(new CustomEvent('scheduleCompleted', { detail: data }));
         });

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import {
@@ -9,8 +9,10 @@ import {
   FaCogs,
   FaSignOutAlt,
   FaCalendarAlt,
+  FaStar,
 } from "react-icons/fa";
 import { logout } from "../../redux/APIs/slices/authSlice";
+import { getSchedulesNeedingFeedback } from "../../utils/feedbackUtils";
 
 const dropdownVariants = {
   hidden: { opacity: 0, y: -20, scale: 0.9 },
@@ -30,6 +32,8 @@ const NavbarDropdown = ({ onClose }) => {
   const ref = useRef();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { myRegisteredSchedules } = useSelector(state => state.scheduleSlice);
+  const { user } = useSelector(state => state.authSlice);
 
   let role = "user";
   try {
@@ -55,9 +59,24 @@ const NavbarDropdown = ({ onClose }) => {
     onClose();
   };
 
+  // Get feedback count for user
+  const getFeedbackCount = () => {
+    if (role !== 'user' || !myRegisteredSchedules || !user) return 0;
+    const pendingFeedbacks = getSchedulesNeedingFeedback(myRegisteredSchedules);
+    return pendingFeedbacks.length;
+  };
+
+  const feedbackCount = getFeedbackCount();
   const commonItems = [
     { label: "Settings", to: "/settings", icon: <FaCogs /> },
+    { 
+      label: "Feedback", 
+      to: "/feedback", 
+      icon: <FaStar />,
+      badge: feedbackCount > 0 ? feedbackCount : null
+    }
   ];
+
 
   const roleItems = {
     admin: [
@@ -76,7 +95,9 @@ const NavbarDropdown = ({ onClose }) => {
       },
       { label: "Profile", to: "/doctor/profile", icon: <FaUserCircle /> },
     ],
-    user: [{ label: "Profile", to: "/profile", icon: <FaUserCircle /> }],
+    user: [
+      { label: "Profile", to: "/profile", icon: <FaUserCircle /> },
+    ],
   };
 
   return (
@@ -93,10 +114,17 @@ const NavbarDropdown = ({ onClose }) => {
           key={item.label}
           to={item.to}
           onClick={onClose}
-          className="flex items-center gap-4 px-6 py-4 text-gray-800 hover:bg-indigo-100 transition-all font-medium"
+          className="flex items-center justify-between px-6 py-4 text-gray-800 hover:bg-indigo-100 transition-all font-medium"
         >
-          <span className="text-lg text-indigo-600">{item.icon}</span>
-          {item.label}
+          <div className="flex items-center gap-4">
+            <span className="text-lg text-indigo-600">{item.icon}</span>
+            {item.label}
+          </div>
+          {item.badge && (
+            <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full min-w-[20px] h-5 flex items-center justify-center">
+              {item.badge}
+            </span>
+          )}
         </Link>
       ))}
       <button

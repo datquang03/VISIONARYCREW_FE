@@ -44,6 +44,7 @@ import DoctorPendingSchedule from "./pages/Dashboard/Doctor/DoctorPendingSchedul
 import AIChatBubble from "./components/AIChatBubble/AIChatBubble";
 import DoctorHome from "./pages/Dashboard/Doctor/DoctorHome";
 import MandatoryFeedback from "./components/MandatoryFeedback/MandatoryFeedback";
+import FeedbackPage from "./pages/Feedback/FeedbackPage";
 
 
 const App = () => {
@@ -72,14 +73,16 @@ const App = () => {
           <Route path="/register/user" element={<UserRegister />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/register/doctor" element={<DoctorRegister />} />
+            <Route path="/profile/doctor/:doctorId" element={<DoctorProfileDetail />} />
+            <Route path="/profile/user/:userId" element={<UserProfileDetail />} />
 
 
           {/* User protected routes */}
           <Route element={<AdminAndUserProtectedRouter />}>
             <Route path="/booking" element={<UserBookingPage />} />
             <Route path="/profile" element={<UserProfile />} />
-            <Route path="/profile/user/:userId" element={<UserProfileDetail />} />
             <Route path="/chat" element={<UserChatPage />} />
+            <Route path="/feedback" element={<FeedbackPage />} />
           </Route>
 
           {/* Admin protected routes */}
@@ -96,7 +99,6 @@ const App = () => {
               <Route path="feedback" element={<AdminFeedback />} />
               <Route path="payments" element={<AdminPayment />} />
             </Route>
-            <Route path="/profile/doctor/:doctorId" element={<DoctorProfileDetail />} />
           </Route>
 
           {/* Doctor protected routes */}

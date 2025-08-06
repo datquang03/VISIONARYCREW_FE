@@ -7,6 +7,7 @@ export const createFeedback = createAsyncThunk('feedback/create', async (payload
     const { data } = await axios.post('/feedback/create', payload);
     return data;
   } catch (err) {
+
     return rejectWithValue(err.response?.data?.message || 'Có lỗi xảy ra khi tạo đánh giá');
   }
 });
