@@ -7,9 +7,9 @@ import store from "./redux/store.js";
 
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
+  // <StrictMode> - Commented out để tránh duplicate API calls trong development
     <Provider store={store}>
       <App />
     </Provider>
-  </StrictMode>
+  // </StrictMode>
 );

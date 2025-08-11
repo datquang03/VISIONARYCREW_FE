@@ -53,12 +53,9 @@ const App = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Khởi tạo auth state từ localStorage khi app khởi động (chỉ một lần)
-    const userInfo = localStorage.getItem("userInfo");
-    if (userInfo) {
-      dispatch(initializeAuth());
-    }
-  }, [dispatch]); // Thêm dispatch vào dependency array
+    // Luôn khởi tạo auth state từ localStorage khi app khởi động
+    dispatch(initializeAuth());
+  }, [dispatch]); // Chỉ chạy một lần khi component mount
 
   return (
     <BrowserRouter>

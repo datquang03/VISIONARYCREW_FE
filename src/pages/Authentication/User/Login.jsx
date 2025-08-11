@@ -27,22 +27,27 @@ const UserLogin = () => {
   };
 
   useEffect(() => {
+    console.log('Login component state:', { isError, isSuccess, isLoading, message });
     if (isError) {
       CustomToast({ message, type: "error" });
       // Không reset form ngay lập tức, để user có thể thử lại
       // setTimeout(() => dispatch(resetForm()), 2000);
     }
     if (isSuccess) {
+      console.log('Login success detected, starting navigation...');
       CustomToast({ message, type: "success" });
       setFormData({
         username: "",
         password: "",
       });
-      // Chuyển hướng ngay lập tức sau khi login thành công
-      navigate("/", { replace: true });
+      // Delay navigation để đảm bảo Redux state được cập nhật
+      setTimeout(() => {
+        console.log('Navigating to homepage...');
+        navigate("/", { replace: true });
+      }, 100);
       // Không reset state để giữ thông tin user
     }
-  }, [isSuccess, isError, dispatch, navigate]);
+  }, [isSuccess, isError, dispatch, navigate, message]);
 
   // Không reset state khi component unmount để giữ thông tin đăng nhập
   // useEffect(() => {

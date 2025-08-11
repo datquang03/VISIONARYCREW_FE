@@ -1,22 +1,22 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from '../axios';
+import { getRequest, postRequest, patchRequest, deleteRequest } from '../../../services/httpMethods';
 
 // Async thunks
 export const getAllSchedules = createAsyncThunk('schedules/getAll', async (params, { rejectWithValue }) => {
   try {
-    const { data } = await axios.get('/schedules/all', { params });
+    const data = await getRequest('schedules/all', params);
     return data;
   } catch (err) {
-    return rejectWithValue(err.response?.data || err.message);
+    return rejectWithValue(err.message || err);
   }
 });
 
 export const getAvailableSchedules = createAsyncThunk('schedules/getAvailable', async (params, { rejectWithValue }) => {
   try {
-    const { data } = await axios.get('/schedules/available', { params });
+    const data = await getRequest('schedules/available', params);
     return data;
   } catch (err) {
-    return rejectWithValue(err.response?.data || err.message);
+    return rejectWithValue(err.message || err);
   }
 });
 
@@ -94,10 +94,10 @@ export const cancelRegisteredSchedule = createAsyncThunk('schedules/cancelRegist
 
 export const getMyRegisteredSchedules = createAsyncThunk('schedules/getMyRegistered', async (params, { rejectWithValue }) => {
   try {
-    const { data } = await axios.get('/schedules/my-registered', { params });
+    const data = await getRequest('schedules/my-registered', params);
     return data;
   } catch (err) {
-    return rejectWithValue(err.response?.data || err.message);
+    return rejectWithValue(err.message || err);
   }
 });
 

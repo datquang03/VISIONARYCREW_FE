@@ -39,11 +39,13 @@ const DoctorLogin = () => {
         username: "",
         password: "",
       });
-      // Chuyển hướng ngay lập tức sau khi login thành công
-      navigate("/doctor", { replace: true });
+      // Delay navigation để đảm bảo Redux state được cập nhật
+      setTimeout(() => {
+        navigate("/doctor", { replace: true });
+      }, 100);
       // Không reset state để giữ thông tin doctor
     }
-  }, [isSuccess, isError, dispatch, navigate]);
+  }, [isSuccess, isError, dispatch, navigate, message]);
 
   // Không reset state khi component unmount để giữ thông tin đăng nhập
   // useEffect(() => {

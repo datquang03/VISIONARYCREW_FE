@@ -177,11 +177,13 @@ const authSlice = createSlice({
         state.message = null;
       })
       .addCase(login.fulfilled, (state, action) => {
-        if (action.payload && (action.payload.status === 200 || action.payload.status === 201)) {
+        console.log('Login fulfilled, action.payload:', action.payload);
+        // Backend trả về trực tiếp {message, user} thay vì {status, data}
+        if (action.payload && action.payload.user && action.payload.user.token) {
           // Lưu user data vào localStorage
           const userData = {
-            ...action.payload.data.user,
-            role: action.payload.data.user.role || "user"
+            ...action.payload.user,
+            role: action.payload.user.role || "user"
           };
           localStorage.setItem("userInfo", JSON.stringify(userData));
           // Cập nhật axios headers
@@ -191,11 +193,13 @@ const authSlice = createSlice({
           state.isSuccess = true;
           state.isLoading = false;
           state.isError = false;
-          state.message = action.payload.data.message;
+          state.message = action.payload.message;
           state.user = userData;
           state.doctor = null; // Reset doctor state
+          console.log('Login success, setting isSuccess to true');
         } else {
-          state.message = action.payload?.data?.message || action.payload?.message || "Đăng nhập thất bại";
+          console.log('Login failed, payload structure issue:', action.payload);
+          state.message = action.payload?.message || "Đăng nhập thất bại";
           state.isSuccess = false;
           state.isLoading = false;
           state.isError = true;
@@ -216,10 +220,12 @@ const authSlice = createSlice({
         state.message = null;
       })
       .addCase(doctorLogin.fulfilled, (state, action) => {
-        if (action.payload && (action.payload.status === 200 || action.payload.status === 201)) {
+        console.log('Doctor login fulfilled, action.payload:', action.payload);
+        // Backend trả về trực tiếp {message, doctor} thay vì {status, data}
+        if (action.payload && action.payload.doctor && action.payload.doctor.token) {
           // Lưu doctor data vào localStorage
           const doctorData = {
-            ...action.payload.data.doctor,
+            ...action.payload.doctor,
             role: "doctor"
           };
           localStorage.setItem("userInfo", JSON.stringify(doctorData));
@@ -230,11 +236,13 @@ const authSlice = createSlice({
           state.isSuccess = true;
           state.isLoading = false;
           state.isError = false;
-          state.message = action.payload.data.message;
+          state.message = action.payload.message;
           state.doctor = doctorData;
           state.user = null; // Reset user state
+          console.log('Doctor login success, setting isSuccess to true');
         } else {
-          state.message = action.payload?.data?.message || action.payload?.message || "Đăng nhập thất bại";
+          console.log('Doctor login failed, payload structure issue:', action.payload);
+          state.message = action.payload?.message || "Đăng nhập thất bại";
           state.isSuccess = false;
           state.isLoading = false;
           state.isError = true;

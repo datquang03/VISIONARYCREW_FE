@@ -6,8 +6,17 @@ import { postRequest, getRequest, putRequest } from "../../../services/httpMetho
 // Chat with AI
 export const chatWithAI = createAsyncThunk(
   "ai/chatWithAI",
-  async ({ message, currentPage, userAction }, { rejectWithValue }) => {
+  async ({ message, currentPage, userAction }, { rejectWithValue, getState }) => {
     try {
+      // Check if user is authenticated
+      const state = getState();
+      const { user, doctor } = state.authSlice || {};
+      const currentUser = user || doctor;
+      
+      if (!currentUser || !currentUser.token) {
+        return rejectWithValue({ message: "User not authenticated" });
+      }
+
       const response = await postRequest("/ai/chat", {
         message,
         currentPage,
@@ -15,7 +24,8 @@ export const chatWithAI = createAsyncThunk(
       });
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || { message: "Error chatting with AI" });
+      const errorMessage = error.response?.data?.message || "AI service not available";
+      return rejectWithValue({ message: errorMessage, status: error.response?.status });
     }
   }
 );
@@ -23,12 +33,22 @@ export const chatWithAI = createAsyncThunk(
 // Get quick help suggestions
 export const getQuickHelp = createAsyncThunk(
   "ai/getQuickHelp",
-  async ({ currentPage }, { rejectWithValue }) => {
+  async ({ currentPage }, { rejectWithValue, getState }) => {
     try {
+      // Check if user is authenticated
+      const state = getState();
+      const { user, doctor } = state.authSlice || {};
+      const currentUser = user || doctor;
+      
+      if (!currentUser || !currentUser.token) {
+        return rejectWithValue({ message: "User not authenticated" });
+      }
+
       const response = await getRequest(`/ai/quick-help?currentPage=${currentPage}`);
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || { message: "Error getting quick help" });
+      const errorMessage = error.response?.data?.message || "Quick help not available";
+      return rejectWithValue({ message: errorMessage, status: error.response?.status });
     }
   }
 );
@@ -36,12 +56,22 @@ export const getQuickHelp = createAsyncThunk(
 // Get user AI statistics
 export const getUserAIStats = createAsyncThunk(
   "ai/getUserAIStats",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
+      // Check if user is authenticated
+      const state = getState();
+      const { user, doctor } = state.authSlice || {};
+      const currentUser = user || doctor;
+      
+      if (!currentUser || !currentUser.token) {
+        return rejectWithValue({ message: "User not authenticated" });
+      }
+
       const response = await getRequest("/ai/stats");
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || { message: "Error getting AI stats" });
+      const errorMessage = error.response?.data?.message || "AI stats not available";
+      return rejectWithValue({ message: errorMessage, status: error.response?.status });
     }
   }
 );
@@ -49,12 +79,22 @@ export const getUserAIStats = createAsyncThunk(
 // Reset conversation
 export const resetConversation = createAsyncThunk(
   "ai/resetConversation",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
+      // Check if user is authenticated
+      const state = getState();
+      const { user, doctor } = state.authSlice || {};
+      const currentUser = user || doctor;
+      
+      if (!currentUser || !currentUser.token) {
+        return rejectWithValue({ message: "User not authenticated" });
+      }
+
       const response = await postRequest("/ai/reset");
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || { message: "Error resetting conversation" });
+      const errorMessage = error.response?.data?.message || "Error resetting conversation";
+      return rejectWithValue({ message: errorMessage, status: error.response?.status });
     }
   }
 );
@@ -62,12 +102,22 @@ export const resetConversation = createAsyncThunk(
 // Get conversation history
 export const getConversationHistory = createAsyncThunk(
   "ai/getConversationHistory",
-  async ({ limit = 20 }, { rejectWithValue }) => {
+  async ({ limit = 20 }, { rejectWithValue, getState }) => {
     try {
+      // Check if user is authenticated
+      const state = getState();
+      const { user, doctor } = state.authSlice || {};
+      const currentUser = user || doctor;
+      
+      if (!currentUser || !currentUser.token) {
+        return rejectWithValue({ message: "User not authenticated" });
+      }
+
       const response = await getRequest(`/ai/history?limit=${limit}`);
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || { message: "Error getting conversation history" });
+      const errorMessage = error.response?.data?.message || "Error getting conversation history";
+      return rejectWithValue({ message: errorMessage, status: error.response?.status });
     }
   }
 );
@@ -75,12 +125,22 @@ export const getConversationHistory = createAsyncThunk(
 // Get AI preferences
 export const getAIPreferences = createAsyncThunk(
   "ai/getAIPreferences",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
+      // Check if user is authenticated
+      const state = getState();
+      const { user, doctor } = state.authSlice || {};
+      const currentUser = user || doctor;
+      
+      if (!currentUser || !currentUser.token) {
+        return rejectWithValue({ message: "User not authenticated" });
+      }
+
       const response = await getRequest("/ai/preferences");
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || { message: "Error getting AI preferences" });
+      const errorMessage = error.response?.data?.message || "Error getting AI preferences";
+      return rejectWithValue({ message: errorMessage, status: error.response?.status });
     }
   }
 );
@@ -88,12 +148,22 @@ export const getAIPreferences = createAsyncThunk(
 // Update AI preferences
 export const updateAIPreferences = createAsyncThunk(
   "ai/updateAIPreferences",
-  async (preferences, { rejectWithValue }) => {
+  async (preferences, { rejectWithValue, getState }) => {
     try {
+      // Check if user is authenticated
+      const state = getState();
+      const { user, doctor } = state.authSlice || {};
+      const currentUser = user || doctor;
+      
+      if (!currentUser || !currentUser.token) {
+        return rejectWithValue({ message: "User not authenticated" });
+      }
+
       const response = await putRequest("/ai/preferences", preferences);
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || { message: "Error updating AI preferences" });
+      const errorMessage = error.response?.data?.message || "Error updating AI preferences";
+      return rejectWithValue({ message: errorMessage, status: error.response?.status });
     }
   }
 );
@@ -101,12 +171,22 @@ export const updateAIPreferences = createAsyncThunk(
 // Toggle AI guide
 export const toggleAIGuide = createAsyncThunk(
   "ai/toggleAIGuide",
-  async ({ isActive }, { rejectWithValue }) => {
+  async ({ isActive }, { rejectWithValue, getState }) => {
     try {
+      // Check if user is authenticated
+      const state = getState();
+      const { user, doctor } = state.authSlice || {};
+      const currentUser = user || doctor;
+      
+      if (!currentUser || !currentUser.token) {
+        return rejectWithValue({ message: "User not authenticated" });
+      }
+
       const response = await putRequest("/ai/toggle", { isActive });
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || { message: "Error toggling AI guide" });
+      const errorMessage = error.response?.data?.message || "Error toggling AI guide";
+      return rejectWithValue({ message: errorMessage, status: error.response?.status });
     }
   }
 );
@@ -114,15 +194,25 @@ export const toggleAIGuide = createAsyncThunk(
 // Get database statistics
 export const getDatabaseStats = createAsyncThunk(
   'ai/getDatabaseStats',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
+      // Check if user is authenticated
+      const state = getState();
+      const { user, doctor } = state.authSlice || {};
+      const currentUser = user || doctor;
+      
+      if (!currentUser || !currentUser.token) {
+        return rejectWithValue({ message: "User not authenticated" });
+      }
+
       const response = await getRequest('/ai/database-stats');
       return response.data;
     } catch (error) {
       if (error.response?.status === 401) {
-        return rejectWithValue('Unauthorized');
+        return rejectWithValue({ message: 'Unauthorized', status: 401 });
       }
-      return rejectWithValue(error.response?.data?.message || 'Lỗi khi lấy thống kê database');
+      const errorMessage = error.response?.data?.message || 'Database stats not available';
+      return rejectWithValue({ message: errorMessage, status: error.response?.status });
     }
   }
 );
@@ -290,9 +380,10 @@ const aiSlice = createSlice({
       .addCase(getQuickHelp.rejected, (state, action) => {
         state.quickHelpLoading = false;
         state.quickHelpSuggestions = [];
-        // Don't show error for 401 (unauthorized) - user just not logged in
-        if (action.error?.status !== 401) {
-          console.error('Quick help error:', action.error);
+        // Don't show error for authentication or common errors
+        const error = action.payload || action.error;
+        if (error?.status !== 401 && error?.message !== 'User not authenticated') {
+          console.log('Quick help not available:', error?.message || 'Unknown error');
         }
       })
       
@@ -360,8 +451,9 @@ const aiSlice = createSlice({
       })
       .addCase(getDatabaseStats.rejected, (state, action) => {
         state.databaseStatsLoading = false;
-        if (action.payload !== 'Unauthorized') {
-          console.error('Database stats error:', action.payload);
+        const error = action.payload || action.error;
+        if (error?.status !== 401 && error?.message !== 'User not authenticated') {
+          console.log('Database stats not available:', error?.message || 'Unknown error');
         }
       });
   },

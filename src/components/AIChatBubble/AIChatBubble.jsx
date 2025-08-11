@@ -9,6 +9,12 @@ import { CustomToast } from '../Toast/CustomToast';
 import { motion } from 'framer-motion';
 import './AIChatBubble.css';
 
+// Helper function to check if current page is authentication page
+const isAuthPage = (pathname) => {
+  const authPaths = ['/login', '/register', '/verify-email'];
+  return authPaths.some(path => pathname.includes(path));
+};
+
 const AIChatBubble = () => {
   const dispatch = useDispatch();
   const location = useLocation();
@@ -24,6 +30,7 @@ const AIChatBubble = () => {
 
   const { user, doctor } = useSelector(state => state.authSlice);
   const currentUser = user || doctor; // Get either user or doctor
+  const isUserAuthenticated = currentUser && currentUser.token; // Check if properly authenticated
 
   const {
     isChatOpen,
@@ -38,10 +45,12 @@ const AIChatBubble = () => {
 
   // Load database stats when component mounts
   useEffect(() => {
-    if (currentUser && !databaseStats) {
-      dispatch(getDatabaseStats());
+    if (isUserAuthenticated && !databaseStats && !isAuthPage(location.pathname)) {
+      dispatch(getDatabaseStats()).catch((error) => {
+        console.log('Database stats not available:', error);
+      });
     }
-  }, [currentUser, databaseStats, dispatch]);
+  }, [isUserAuthenticated, databaseStats, dispatch, location.pathname]);
 
   // Debug messages
 
@@ -51,18 +60,24 @@ const AIChatBubble = () => {
     dispatch(updateCurrentPage(location.pathname));
     
     // Keep modal open when navigating (don't close on page change)
-    if (isChatOpen && currentUser) { // Only call if user is logged in
+    // Only fetch quick help if user is authenticated and not on auth pages
+    if (isChatOpen && isUserAuthenticated && !isAuthPage(location.pathname)) {
       // Fetch quick help for new page
-      dispatch(getQuickHelp({ currentPage: location.pathname }));
+      dispatch(getQuickHelp({ currentPage: location.pathname })).catch((error) => {
+        console.log('Quick help not available for this page:', error);
+      });
     }
-  }, [location.pathname, dispatch, isChatOpen, currentUser]);
+  }, [location.pathname, dispatch, isChatOpen, isUserAuthenticated]);
 
   // Get quick help when page changes
   useEffect(() => {
-    if (isAIActive && location.pathname && currentUser) { // Only call if user is logged in
-      dispatch(getQuickHelp({ currentPage: location.pathname }));
+    // Only call if user is authenticated and not on auth pages
+    if (isAIActive && location.pathname && isUserAuthenticated && !isAuthPage(location.pathname)) {
+      dispatch(getQuickHelp({ currentPage: location.pathname })).catch((error) => {
+        console.log('Quick help not available for this page:', error);
+      });
     }
-  }, [location.pathname, dispatch, isAIActive, currentUser]);
+  }, [location.pathname, dispatch, isAIActive, isUserAuthenticated]);
 
   // Auto scroll to bottom when new messages arrive
   useEffect(() => {
@@ -94,7 +109,7 @@ const AIChatBubble = () => {
     if (!message.trim() || isLoading) return;
 
     // Check if user is logged in
-    if (!currentUser) {
+    if (!isUserAuthenticated) {
       CustomToast({
         message: 'Vui lòng đăng nhập để sử dụng AI Assistant',
         type: 'warning'
@@ -257,9 +272,9 @@ const AIChatBubble = () => {
 
   return (
     <>
-      {/* AI Chat Bubble */}
+      {/* AI Chat Bubble - Hide on authentication pages */}
       <AnimatePresence>
-        {isAIActive && currentUser && (
+        {isAIActive && isUserAuthenticated && !isAuthPage(location.pathname) && (
           <motion.div
             ref={bubbleRef}
             className="ai-chat-bubble"

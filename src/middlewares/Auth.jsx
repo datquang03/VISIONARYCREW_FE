@@ -1,34 +1,25 @@
-import { useSelector } from "react-redux";
 import { Navigate, Outlet } from "react-router-dom";
-import { useMemo, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { CustomToast } from "../components/Toast/CustomToast";
-
-const getUserInfo = (state) => {
-  // Lấy từ redux slice
-  const { user, doctor } = state.authSlice || {};
-  
-  // Lấy từ localStorage nếu redux chưa có
-  const localUserInfo = localStorage.getItem("userInfo")
-    ? JSON.parse(localStorage.getItem("userInfo"))
-    : null;
-  
-  // Ưu tiên redux state, fallback về localStorage
-  return user || doctor || localUserInfo;
-};
+import useAuth from "../hooks/useAuth";
 
 const ProtectedRouter = () => {
-  const userInfo = useSelector((state) => getUserInfo(state));
-  const isAuthenticated = useMemo(() => !!userInfo, [userInfo]);
+  const { isAuthenticated } = useAuth();
   const hasShownToast = useRef(false);
   
   useEffect(() => {
-    if (!isAuthenticated && !hasShownToast.current) {
-      CustomToast({ 
-        message: "Vui lòng đăng nhập để truy cập trang này", 
-        type: "error" 
-      });
-      hasShownToast.current = true;
-    }
+    // Delay check để tránh race condition với login process
+    const timer = setTimeout(() => {
+      if (!isAuthenticated && !hasShownToast.current) {
+        CustomToast({ 
+          message: "Vui lòng đăng nhập để truy cập trang này", 
+          type: "error" 
+        });
+        hasShownToast.current = true;
+      }
+    }, 50);
+    
+    return () => clearTimeout(timer);
   }, [isAuthenticated]);
   
   if (!isAuthenticated) {
@@ -39,25 +30,28 @@ const ProtectedRouter = () => {
 };
 
 const AdminProtectedRouter = () => {
-  const userInfo = useSelector((state) => getUserInfo(state));
-  const isAuthenticated = useMemo(() => !!userInfo?.token, [userInfo?.token]);
-  const isAdmin = useMemo(() => userInfo?.role === "admin", [userInfo?.role]);
+  const { isAuthenticated, isAdmin } = useAuth();
   const hasShownToast = useRef(false);
   
   useEffect(() => {
-    if (!isAuthenticated && !hasShownToast.current) {
-      CustomToast({ 
-        message: "Vui lòng đăng nhập để truy cập trang này", 
-        type: "error" 
-      });
-      hasShownToast.current = true;
-    } else if (isAuthenticated && !isAdmin && !hasShownToast.current) {
-      CustomToast({ 
-        message: "Chỉ admin mới có quyền truy cập trang này", 
-        type: "error" 
-      });
-      hasShownToast.current = true;
-    }
+    // Delay check để tránh race condition với login process
+    const timer = setTimeout(() => {
+      if (!isAuthenticated && !hasShownToast.current) {
+        CustomToast({ 
+          message: "Vui lòng đăng nhập để truy cập trang này", 
+          type: "error" 
+        });
+        hasShownToast.current = true;
+      } else if (isAuthenticated && !isAdmin && !hasShownToast.current) {
+        CustomToast({ 
+          message: "Chỉ admin mới có quyền truy cập trang này", 
+          type: "error" 
+        });
+        hasShownToast.current = true;
+      }
+    }, 50);
+    
+    return () => clearTimeout(timer);
   }, [isAuthenticated, isAdmin]);
   
   if (!isAuthenticated) {
@@ -72,25 +66,28 @@ const AdminProtectedRouter = () => {
 };
 
 const DoctorProtectedRouter = () => {
-  const userInfo = useSelector((state) => getUserInfo(state));
-  const isAuthenticated = useMemo(() => !!userInfo?.token, [userInfo?.token]);
-  const isDoctor = useMemo(() => userInfo?.role === "doctor", [userInfo?.role]);
+  const { isAuthenticated, isDoctor } = useAuth();
   const hasShownToast = useRef(false);
   
   useEffect(() => {
-    if (!isAuthenticated && !hasShownToast.current) {
-      CustomToast({ 
-        message: "Vui lòng đăng nhập để truy cập trang này", 
-        type: "error" 
-      });
-      hasShownToast.current = true;
-    } else if (isAuthenticated && !isDoctor && !hasShownToast.current) {
-      CustomToast({ 
-        message: "Chỉ bác sĩ mới có quyền truy cập trang này", 
-        type: "error" 
-      });
-      hasShownToast.current = true;
-    }
+    // Delay check để tránh race condition với login process
+    const timer = setTimeout(() => {
+      if (!isAuthenticated && !hasShownToast.current) {
+        CustomToast({ 
+          message: "Vui lòng đăng nhập để truy cập trang này", 
+          type: "error" 
+        });
+        hasShownToast.current = true;
+      } else if (isAuthenticated && !isDoctor && !hasShownToast.current) {
+        CustomToast({ 
+          message: "Chỉ bác sĩ mới có quyền truy cập trang này", 
+          type: "error" 
+        });
+        hasShownToast.current = true;
+      }
+    }, 50);
+    
+    return () => clearTimeout(timer);
   }, [isAuthenticated, isDoctor]);
   
   if (!isAuthenticated) {
@@ -105,25 +102,28 @@ const DoctorProtectedRouter = () => {
 };
 
 const UserProtectedRouter = () => {
-  const userInfo = useSelector((state) => getUserInfo(state));
-  const isAuthenticated = useMemo(() => !!userInfo?.token, [userInfo?.token]);
-  const isUser = useMemo(() => userInfo?.role === "user", [userInfo?.role]);
+  const { isAuthenticated, isUser } = useAuth();
   const hasShownToast = useRef(false);
   
   useEffect(() => {
-    if (!isAuthenticated && !hasShownToast.current) {
-      CustomToast({ 
-        message: "Vui lòng đăng nhập để truy cập trang này", 
-        type: "error" 
-      });
-      hasShownToast.current = true;
-    } else if (isAuthenticated && !isUser && !hasShownToast.current) {
-      CustomToast({ 
-        message: "Chỉ người dùng thường mới có quyền truy cập trang này", 
-        type: "error" 
-      });
-      hasShownToast.current = true;
-    }
+    // Delay check để tránh race condition với login process
+    const timer = setTimeout(() => {
+      if (!isAuthenticated && !hasShownToast.current) {
+        CustomToast({ 
+          message: "Vui lòng đăng nhập để truy cập trang này", 
+          type: "error" 
+        });
+        hasShownToast.current = true;
+      } else if (isAuthenticated && !isUser && !hasShownToast.current) {
+        CustomToast({ 
+          message: "Chỉ người dùng thường mới có quyền truy cập trang này", 
+          type: "error" 
+        });
+        hasShownToast.current = true;
+      }
+    }, 50);
+    
+    return () => clearTimeout(timer);
   }, [isAuthenticated, isUser]);
   
   if (!isAuthenticated) {
@@ -138,25 +138,29 @@ const UserProtectedRouter = () => {
 };
 
 const DoctorAndAdminProtectedRouter = () => {
-  const userInfo = useSelector((state) => getUserInfo(state));
-  const isAuthenticated = useMemo(() => !!userInfo?.token, [userInfo?.token]);
-  const isAuthorized = useMemo(() => userInfo?.role === "admin" || userInfo?.role === "doctor", [userInfo?.role]);
+  const { isAuthenticated, isDoctor, isAdmin } = useAuth();
+  const isAuthorized = isAdmin || isDoctor;
   const hasShownToast = useRef(false);
   
   useEffect(() => {
-    if (!isAuthenticated && !hasShownToast.current) {
-      CustomToast({ 
-        message: "Vui lòng đăng nhập để truy cập trang này", 
-        type: "error" 
-      });
-      hasShownToast.current = true;
-    } else if (isAuthenticated && !isAuthorized && !hasShownToast.current) {
-      CustomToast({ 
-        message: "Chỉ admin và bác sĩ mới có quyền truy cập trang này", 
-        type: "error" 
-      });
-      hasShownToast.current = true;
-    }
+    // Delay check để tránh race condition với login process
+    const timer = setTimeout(() => {
+      if (!isAuthenticated && !hasShownToast.current) {
+        CustomToast({ 
+          message: "Vui lòng đăng nhập để truy cập trang này", 
+          type: "error" 
+        });
+        hasShownToast.current = true;
+      } else if (isAuthenticated && !isAuthorized && !hasShownToast.current) {
+        CustomToast({ 
+          message: "Chỉ admin và bác sĩ mới có quyền truy cập trang này", 
+          type: "error" 
+        });
+        hasShownToast.current = true;
+      }
+    }, 50);
+    
+    return () => clearTimeout(timer);
   }, [isAuthenticated, isAuthorized]);
   
   if (!isAuthenticated) {
@@ -171,25 +175,29 @@ const DoctorAndAdminProtectedRouter = () => {
 };
 
 const AdminAndUserProtectedRouter = () => {
-  const userInfo = useSelector((state) => getUserInfo(state));
-  const isAuthenticated = useMemo(() => !!userInfo?.token, [userInfo?.token]);
-  const isAuthorized = useMemo(() => userInfo?.role === "admin" || userInfo?.role === "user", [userInfo?.role]);
+  const { isAuthenticated, isUser, isAdmin } = useAuth();
+  const isAuthorized = isAdmin || isUser;
   const hasShownToast = useRef(false);
   
   useEffect(() => {
-    if (!isAuthenticated && !hasShownToast.current) {
-      CustomToast({ 
-        message: "Vui lòng đăng nhập để truy cập trang này", 
-        type: "error" 
-      });
-      hasShownToast.current = true;
-    } else if (isAuthenticated && !isAuthorized && !hasShownToast.current) {
-      CustomToast({ 
-        message: "Chỉ admin và người dùng thường mới có quyền truy cập trang này", 
-        type: "error" 
-      });
-      hasShownToast.current = true;
-    }
+    // Delay check để tránh race condition với login process
+    const timer = setTimeout(() => {
+      if (!isAuthenticated && !hasShownToast.current) {
+        CustomToast({ 
+          message: "Vui lòng đăng nhập để truy cập trang này", 
+          type: "error" 
+        });
+        hasShownToast.current = true;
+      } else if (isAuthenticated && !isAuthorized && !hasShownToast.current) {
+        CustomToast({ 
+          message: "Chỉ admin và người dùng thường mới có quyền truy cập trang này", 
+          type: "error" 
+        });
+        hasShownToast.current = true;
+      }
+    }, 50);
+    
+    return () => clearTimeout(timer);
   }, [isAuthenticated, isAuthorized]);
   
   if (!isAuthenticated) {
@@ -202,8 +210,6 @@ const AdminAndUserProtectedRouter = () => {
   
   return <Outlet />;
 };
-
-
 
 export {
   ProtectedRouter,

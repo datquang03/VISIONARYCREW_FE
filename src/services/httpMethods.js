@@ -1,7 +1,21 @@
 
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "https://visionarycrew-be-rpo7.vercel.app/api";
+// Smart API URL detection
+let API_URL;
+if (import.meta.env.VITE_API_URL) {
+  // Nếu có env variable, sử dụng trực tiếp và thêm /api nếu chưa có
+  API_URL = import.meta.env.VITE_API_URL.endsWith('/api') 
+    ? import.meta.env.VITE_API_URL 
+    : import.meta.env.VITE_API_URL + '/api';
+} else {
+  // Nếu không có env variable, sử dụng proxy trong dev, direct URL trong prod
+  API_URL = import.meta.env.DEV ? "/api" : "https://visionarycrew-be-rpo7.vercel.app/api";
+}
+
+console.log('API_URL:', API_URL);
+console.log('import.meta.env.DEV:', import.meta.env.DEV);
+console.log('import.meta.env.VITE_API_URL:', import.meta.env.VITE_API_URL);
 
 // Create axios instance with default config
 const axiosInstance = axios.create({
@@ -9,15 +23,26 @@ const axiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true,
+  // Tạm thời comment withCredentials để test
+  // withCredentials: true,
 });
 
 // Add request interceptor to add auth token
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Get token from userInfo object trong localStorage
+    const userInfo = localStorage.getItem("userInfo");
+    if (userInfo) {
+      try {
+        const parsedUserInfo = JSON.parse(userInfo);
+        const token = parsedUserInfo.token;
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      } catch (error) {
+        console.error("Error parsing userInfo in httpMethods:", error);
+        localStorage.removeItem("userInfo");
+      }
     }
     return config;
   },
@@ -41,8 +66,11 @@ axiosInstance.interceptors.response.use(
 
     // Handle 401 Unauthorized
     if (error.response.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+      localStorage.removeItem("userInfo");
+      // Chỉ redirect nếu không phải login request
+      if (!error.config.url.includes('login')) {
+        window.location.href = "/login";
+      }
       return Promise.reject({
         message: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
       });
@@ -62,17 +90,15 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-// Helper function to ensure URL starts with /api
-const ensureApiPrefix = (url) => {
-  if (!url.startsWith('/api')) {
-    return `/api${url.startsWith('/') ? url : `/${url}`}`;
-  }
-  return url;
+// Helper function - không cần thêm /api prefix nữa vì baseURL đã có
+const normalizeUrl = (url) => {
+  // Chỉ đảm bảo URL không bắt đầu với /
+  return url.startsWith('/') ? url.slice(1) : url;
 };
 
 export const getRequest = async (url, params) => {
   try {
-    return await axiosInstance.get(ensureApiPrefix(url), { params });
+    return await axiosInstance.get(normalizeUrl(url), { params });
   } catch (error) {
     throw error;
   }
@@ -80,7 +106,7 @@ export const getRequest = async (url, params) => {
 
 export const postRequest = async (url, data) => {
   try {
-    return await axiosInstance.post(ensureApiPrefix(url), data);
+    return await axiosInstance.post(normalizeUrl(url), data);
   } catch (error) {
     throw error;
   }
@@ -88,7 +114,7 @@ export const postRequest = async (url, data) => {
 
 export const postRequestFormData = async (url, formData) => {
   try {
-    return await axiosInstance.post(ensureApiPrefix(url), formData, {
+    return await axiosInstance.post(normalizeUrl(url), formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
   } catch (error) {
@@ -106,7 +132,7 @@ export const putRequest = async (url, data) => {
 
 export const putRequestFormData = async (url, formData) => {
   try {
-    return await axiosInstance.put(ensureApiPrefix(url), formData, {
+    return await axiosInstance.put(normalizeUrl(url), formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
   } catch (error) {
@@ -116,7 +142,7 @@ export const putRequestFormData = async (url, formData) => {
 
 export const patchRequest = async (url, data) => {
   try {
-    return await axiosInstance.patch(ensureApiPrefix(url), data);
+    return await axiosInstance.patch(normalizeUrl(url), data);
   } catch (error) {
     throw error;
   }
@@ -124,7 +150,7 @@ export const patchRequest = async (url, data) => {
 
 export const deleteRequest = async (url, data) => {
   try {
-    return await axiosInstance.delete(ensureApiPrefix(url), { data });
+    return await axiosInstance.delete(normalizeUrl(url), { data });
   } catch (error) {
     throw error;
   }

@@ -11,8 +11,12 @@ if (userInfo) {
     localStorage.removeItem("userInfo"); // Xóa userInfo không hợp lệ
   }
 }
+
+// Smart API URL detection - tương tự như httpMethods.js
+const API_URL = import.meta.env.DEV ? "/api" : "https://visionarycrew-be-rpo7.vercel.app/api";
+
 const axiosClient = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL || "http://localhost:8080"}/api`,
+  baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
