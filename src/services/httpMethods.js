@@ -1,7 +1,7 @@
 
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "https://visionarycrew-be-rpo7.vercel.app/api";
+const API_URL = import.meta.env.VITE_API_URL || "https://visionarycrew-be-rpo7.vercel.app";
 
 // Create axios instance with default config
 const axiosInstance = axios.create({
