@@ -62,9 +62,17 @@ axiosInstance.interceptors.response.use(
   }
 );
 
+// Helper function to ensure URL starts with /api
+const ensureApiPrefix = (url) => {
+  if (!url.startsWith('/api')) {
+    return `/api${url.startsWith('/') ? url : `/${url}`}`;
+  }
+  return url;
+};
+
 export const getRequest = async (url, params) => {
   try {
-    return await axiosInstance.get(url, { params });
+    return await axiosInstance.get(ensureApiPrefix(url), { params });
   } catch (error) {
     throw error;
   }
@@ -72,7 +80,7 @@ export const getRequest = async (url, params) => {
 
 export const postRequest = async (url, data) => {
   try {
-    return await axiosInstance.post(url, data);
+    return await axiosInstance.post(ensureApiPrefix(url), data);
   } catch (error) {
     throw error;
   }
@@ -80,7 +88,7 @@ export const postRequest = async (url, data) => {
 
 export const postRequestFormData = async (url, formData) => {
   try {
-    return await axiosInstance.post(url, formData, {
+    return await axiosInstance.post(ensureApiPrefix(url), formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
   } catch (error) {
@@ -90,7 +98,7 @@ export const postRequestFormData = async (url, formData) => {
 
 export const putRequest = async (url, data) => {
   try {
-    return await axiosInstance.put(url, data);
+    return await axiosInstance.put(ensureApiPrefix(url), data);
   } catch (error) {
     throw error;
   }
@@ -98,7 +106,7 @@ export const putRequest = async (url, data) => {
 
 export const putRequestFormData = async (url, formData) => {
   try {
-    return await axiosInstance.put(url, formData, {
+    return await axiosInstance.put(ensureApiPrefix(url), formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
   } catch (error) {
@@ -108,7 +116,7 @@ export const putRequestFormData = async (url, formData) => {
 
 export const patchRequest = async (url, data) => {
   try {
-    return await axiosInstance.patch(url, data);
+    return await axiosInstance.patch(ensureApiPrefix(url), data);
   } catch (error) {
     throw error;
   }
@@ -116,7 +124,7 @@ export const patchRequest = async (url, data) => {
 
 export const deleteRequest = async (url, data) => {
   try {
-    return await axiosInstance.delete(url, { data });
+    return await axiosInstance.delete(ensureApiPrefix(url), { data });
   } catch (error) {
     throw error;
   }
