@@ -119,11 +119,11 @@ const DoctorRegister = () => {
 
   useEffect(() => {
     if (isError) {
-      CustomToast({ message: message || "Đăng ký thất bại!", type: "error" });
+      CustomToast.error(message || "Đăng ký thất bại!");
       setTimeout(() => dispatch(setNull()), 2000);
     }
     if (isSuccessReg) {
-      CustomToast({ message: message || "Đăng ký thành công!", type: "success" });
+      CustomToast.success("Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.");
       setFormData({
         username: "",
         email: "",
@@ -144,7 +144,7 @@ const DoctorRegister = () => {
       setTimeout(() => {
         dispatch(setNull());
         navigate("/login/doctor");
-      }, 1000);
+      }, 2000);
     }
   }, [isSuccessReg, isError, message, dispatch, navigate]);
 

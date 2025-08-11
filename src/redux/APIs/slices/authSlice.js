@@ -285,22 +285,24 @@ const authSlice = createSlice({
         state.isError = false;
       })
       .addCase(doctorRegisterAcc.fulfilled, (state, action) => {
-        if (action.payload.status === 200 || action.payload.status === 201) {
+        // Kiểm tra nếu có message trong response
+        if (action.payload && action.payload.message) {
           state.isSuccessReg = true;
           state.isLoading = false;
           state.isError = false;
-          state.message = action.payload.data.message;
+          state.message = action.payload.message;
         } else {
-          state.message = action.payload.data.message;
+          state.message = "Đăng ký thất bại";
           state.isSuccessReg = false;
           state.isLoading = false;
           state.isError = true;
         }
       })
-      .addCase(doctorRegisterAcc.rejected, (state) => {
+      .addCase(doctorRegisterAcc.rejected, (state, action) => {
         state.isLoading = false;
         state.isSuccessReg = false;
         state.isError = true;
+        state.message = action.payload?.message || "Đăng ký thất bại";
       })
       .addCase(updateProfile.pending, (state) => {
         state.isLoading = true;
