@@ -45,6 +45,7 @@ import AIChatBubble from "./components/AIChatBubble/AIChatBubble";
 import DoctorHome from "./pages/Dashboard/Doctor/DoctorHome";
 import MandatoryFeedback from "./components/MandatoryFeedback/MandatoryFeedback";
 import FeedbackPage from "./pages/Feedback/FeedbackPage";
+import AboutUsPage from "./pages/AboutUs/AboutUsPage";
 
 
 const App = () => {
@@ -75,6 +76,7 @@ const App = () => {
           <Route path="/register/doctor" element={<DoctorRegister />} />
             <Route path="/profile/doctor/:doctorId" element={<DoctorProfileDetail />} />
             <Route path="/profile/user/:userId" element={<UserProfileDetail />} />
+            <Route path="/about" element={<AboutUsPage />} />
 
 
           {/* User protected routes */}

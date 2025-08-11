@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.text-primary {
+  @apply text-blue-600;
+}
+
+.bg-primary {
+  @apply bg-blue-600;
+}
+
+.hover\:bg-primary-dark:hover {
+  @apply bg-blue-700;
+}
+
+/* Custom animations */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Custom styles for sections */
+.section-gradient {
+  background: linear-gradient(135deg, #f6f9fc 0%, #ffffff 100%);
+}
+
+/* Card hover effects */
+.feature-card {
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-10px);
+}
+
+/* Custom shadows */
+.custom-shadow {
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive text adjustments */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+  }
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Button styles */
+.btn-primary {
+  @apply bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg 
+         hover:bg-blue-700 transition-colors duration-300
+         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
+}
+
+/* Image container styles */
+.image-container {
+  @apply relative overflow-hidden rounded-xl;
+  aspect-ratio: 1;
+}
+
+.image-container img {
+  @apply object-cover transition-transform duration-300;
+}
+
+.image-container:hover img {
+  transform: scale(1.05);
+}
+
+/* Price card styles */
+.price-card {
+  @apply bg-white rounded-xl shadow-lg p-8 transition-all duration-300
+         hover:shadow-xl hover:transform hover:-translate-y-2;
+}
+
+/* Feature icon styles */
+.feature-icon {
+  @apply text-4xl text-primary mb-4 transition-transform duration-300
+         group-hover:transform group-hover:scale-110;
+}
+
+/* Section spacing */
+.section-spacing {
+  @apply py-20 px-4 md:px-8;
+}
+
+/* Container max-width */
+.container-custom {
+  @apply max-w-7xl mx-auto;
+} 
