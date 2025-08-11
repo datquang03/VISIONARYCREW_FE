@@ -106,6 +106,14 @@ export const putRequestFormData = async (url, formData) => {
   }
 };
 
+export const patchRequest = async (url, data) => {
+  try {
+    return await axiosInstance.patch(url, data);
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const deleteRequest = async (url, data) => {
   try {
     return await axiosInstance.delete(url, { data });
