@@ -8,7 +8,7 @@ import { FaRegHeart, FaRegComment, FaRegEye, FaArrowRight } from 'react-icons/fa
 const BlogList = ({ limit = 6, showViewAll = true }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { blogs, isLoading, pagination } = useSelector((state) => state.blogSlice);
+  const { blogs, isLoading, pagination } = useSelector((state) => state.blog);
 
   useEffect(() => {
     dispatch(getBlogs({ 

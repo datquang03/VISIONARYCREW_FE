@@ -2,7 +2,26 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getRequest, postRequest, putRequest, deleteRequest } from "../../../services/httpMethods";
 import { CustomToast } from "../../../components/Toast/CustomToast";
 
-// Get all blogs
+const initialState = {
+  blogs: [],
+  currentBlog: null,
+  pagination: {
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    limit: 10,
+  },
+  isLoading: false,
+  isError: false,
+  message: "",
+  // For blog creation/update
+  isSubmitting: false,
+  submitError: null,
+  // For comments
+  isCommentLoading: false,
+  commentError: null,
+};
+
 export const getBlogs = createAsyncThunk(
   "blog/getBlogs",
   async ({ page = 1, limit = 10, search = "", tag = "", status = "published" }, { rejectWithValue }) => {
@@ -12,12 +31,11 @@ export const getBlogs = createAsyncThunk(
       );
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi khi lấy danh sách blog");
+      return rejectWithValue(error.response?.data || "Lỗi khi tải danh sách blog");
     }
   }
 );
 
-// Get blog by id
 export const getBlogById = createAsyncThunk(
   "blog/getBlogById",
   async (id, { rejectWithValue }) => {
@@ -25,12 +43,11 @@ export const getBlogById = createAsyncThunk(
       const response = await getRequest(`/blogs/${id}`);
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi khi lấy thông tin blog");
+      return rejectWithValue(error.response?.data || "Lỗi khi tải thông tin blog");
     }
   }
 );
 
-// Create blog
 export const createBlog = createAsyncThunk(
   "blog/createBlog",
   async (formData, { rejectWithValue }) => {
@@ -43,7 +60,6 @@ export const createBlog = createAsyncThunk(
   }
 );
 
-// Update blog
 export const updateBlog = createAsyncThunk(
   "blog/updateBlog",
   async ({ id, formData }, { rejectWithValue }) => {
@@ -56,7 +72,6 @@ export const updateBlog = createAsyncThunk(
   }
 );
 
-// Delete blog
 export const deleteBlog = createAsyncThunk(
   "blog/deleteBlog",
   async (id, { rejectWithValue }) => {
@@ -125,26 +140,6 @@ export const deleteComment = createAsyncThunk(
   }
 );
 
-const initialState = {
-  blogs: [],
-  currentBlog: null,
-  pagination: {
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    limit: 10,
-  },
-  isLoading: false,
-  isError: false,
-  message: "",
-  // For blog creation/update
-  isSubmitting: false,
-  submitError: null,
-  // For comments
-  isCommentLoading: false,
-  commentError: null,
-};
-
 const blogSlice = createSlice({
   name: "blog",
   initialState,
@@ -162,7 +157,7 @@ const blogSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Get all blogs
+      // Get Blogs
       .addCase(getBlogs.pending, (state) => {
         state.isLoading = true;
       })
@@ -179,7 +174,7 @@ const blogSlice = createSlice({
         CustomToast({ message: state.message, type: "error" });
       })
 
-      // Get blog by id
+      // Get Blog by ID
       .addCase(getBlogById.pending, (state) => {
         state.isLoading = true;
       })
@@ -195,7 +190,7 @@ const blogSlice = createSlice({
         CustomToast({ message: state.message, type: "error" });
       })
 
-      // Create blog
+      // Create Blog
       .addCase(createBlog.pending, (state) => {
         state.isSubmitting = true;
       })
@@ -211,7 +206,7 @@ const blogSlice = createSlice({
         CustomToast({ message: state.submitError, type: "error" });
       })
 
-      // Update blog
+      // Update Blog
       .addCase(updateBlog.pending, (state) => {
         state.isSubmitting = true;
       })
@@ -230,7 +225,7 @@ const blogSlice = createSlice({
         CustomToast({ message: state.submitError, type: "error" });
       })
 
-      // Delete blog
+      // Delete Blog
       .addCase(deleteBlog.pending, (state) => {
         state.isSubmitting = true;
       })
@@ -330,4 +325,4 @@ const blogSlice = createSlice({
 });
 
 export const { resetBlogState, clearSubmitError } = blogSlice.actions;
-export default blogSlice; 
+export default blogSlice.reducer; 

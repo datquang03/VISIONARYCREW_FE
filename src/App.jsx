@@ -46,6 +46,7 @@ import DoctorHome from "./pages/Dashboard/Doctor/DoctorHome";
 import MandatoryFeedback from "./components/MandatoryFeedback/MandatoryFeedback";
 import FeedbackPage from "./pages/Feedback/FeedbackPage";
 import AboutUsPage from "./pages/AboutUs/AboutUsPage";
+import DoctorBlog from "./pages/Dashboard/Doctor/DoctorBlog";
 
 
 const App = () => {
@@ -77,6 +78,7 @@ const App = () => {
             <Route path="/profile/doctor/:doctorId" element={<DoctorProfileDetail />} />
             <Route path="/profile/user/:userId" element={<UserProfileDetail />} />
             <Route path="/about" element={<AboutUsPage />} />
+            <Route path="blog" element={<DoctorBlog />} />
 
 
           {/* User protected routes */}
@@ -116,6 +118,7 @@ const App = () => {
               <Route path="form" element={<DoctorRegisterForm />} />
               <Route path="feedback" element={<DoctorFeedback />} />
               <Route path="chat" element={<DoctorChatPage />} />
+              <Route path="blog" element={<DoctorBlog />} />
             </Route>
             <Route path="/doctor/booking" element={<DoctorSchedule />} />
             <Route path="/doctor/packages" element={<DoctorPackages />} />

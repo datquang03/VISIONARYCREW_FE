@@ -13,7 +13,7 @@ import notificationReducer from './APIs/slices/notificationSlice';
 import aiReducer from './APIs/slices/aiSlice';
 import feedbackReducer from './APIs/slices/feedbackSlice';
 import messageReducer from './APIs/slices/messageSlice';
-import blogSlice from './APIs/slices/blogSlice';
+import blogReducer from './APIs/slices/blogSlice';
 
 const store = configureStore({
   reducer: {
@@ -31,7 +31,7 @@ const store = configureStore({
     ai: aiReducer,
     feedbackSlice: feedbackReducer,
     messageSlice: messageReducer,
-    blogSlice: blogSlice.reducer,
+    blog: blogReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

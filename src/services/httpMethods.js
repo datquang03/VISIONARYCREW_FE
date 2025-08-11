@@ -1,111 +1,83 @@
 
-import axiosClient from "../redux/APIs/axios";
+import axios from "axios";
 
+const API_URL = import.meta.env.VITE_API_URL || "https://visionarycrew-be-rpo7.vercel.app/api";
 
-// [GET]
-const getRequest = async (url) => {
-  try {
-    const res = await axiosClient.get(`${url}`);
-    return res;
-  } catch (error) {
-    return error.response ? error.response : { data: { message: error.message } };
+// Create axios instance with default config
+const axiosInstance = axios.create({
+  baseURL: API_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
+});
+
+// Add request interceptor to add auth token
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-};
+);
 
-// [GET] -> params
-const getRequestParams = async (url, params) => {
-  try {
-    const res = await axiosClient.get(`${url}`, { params });
-    return res;
-  } catch (error) {
-    return error.response ? error.response : { data: { message: error.message } };
+// Add response interceptor to handle errors
+axiosInstance.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
   }
+);
+
+export const getRequest = async (url) => {
+  return await axiosInstance.get(url);
 };
 
-// [POST]
-const postRequest = async (url, payload) => {
-  try {
-    const res = await axiosClient.post(`${url}`, payload);
-    return res;
-  } catch (error) {
-    return error.response ? error.response : { data: { message: error.message } };
-  }
+export const getRequestParams = async (url, params) => {
+  return await axiosInstance.get(url, { params });
 };
 
-// [POST] -> multipart/form-data
-const postRequestFormData = async (url, payload) => {
-  try {
-    const res = await axiosClient.post(`${url}`, payload, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return res;
-  } catch (error) {
-    return error.response ? error.response : { data: { message: error.message } };
-  }
+export const postRequest = async (url, data) => {
+  return await axiosInstance.post(url, data);
 };
 
-// [DELETE]
-const deleteRequest = async (url, payload) => {
-  try {
-    const res = await axiosClient.delete(`${url}`, { data: payload });
-    return res;
-  } catch (error) {
-    return error.response ? error.response : { data: { message: error.message } };
-  }
+export const postRequestFormData = async (url, formData) => {
+  return await axiosInstance.post(url, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 };
 
-// [PUT]
-const putRequest = async (url, payload) => {
-  try {
-    const res = await axiosClient.put(`${url}`, payload);
-    return res;
-  } catch (error) {
-    return error.response ? error.response : { data: { message: error.message } };
-  }
+export const putRequest = async (url, data) => {
+  return await axiosInstance.put(url, data);
 };
 
-// [PUT] -> params
-const putRequestParams = async (url, params) => {
-  try {
-    const queryString = new URLSearchParams(params).toString();
-    const fullUrl = queryString ? `${url}?${queryString}` : url;
-    const res = await axiosClient.put(fullUrl, null);
-    return res;
-  } catch (error) {
-    return error.response ? error.response : { data: { message: error.message } };
-  }
+export const putRequestFormData = async (url, formData) => {
+  return await axiosInstance.put(url, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 };
 
-// [PUT] -> multipart/form-data
-const putRequestFormData = async (url, payload) => {
-  try {
-    const res = await axiosClient.put(`${url}`, payload, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return res;
-  } catch (error) {
-    return error.response ? error.response : { data: { message: error.message } };
-  }
+export const putRequestParams = async (url, params) => {
+  const queryString = new URLSearchParams(params).toString();
+  const fullUrl = queryString ? `${url}?${queryString}` : url;
+  return await axiosInstance.put(fullUrl);
 };
 
-// [PATCH]
-const patchRequest = async (url, payload) => {
-  try {
-    const res = await axiosClient.patch(`${url}`, payload);
-    return res;
-  } catch (error) {
-    return error.response ? error.response : { data: { message: error.message } };
-  }
+export const deleteRequest = async (url, data) => {
+  return await axiosInstance.delete(url, { data });
 };
 
-export {
-  getRequest,
-  getRequestParams,
-  postRequest,
-  deleteRequest,
-  putRequest,
-  patchRequest,
-  postRequestFormData,
-  putRequestParams,
-  putRequestFormData,
+export const patchRequest = async (url, data) => {
+  return await axiosInstance.patch(url, data);
 };
+
+export default axiosInstance;
